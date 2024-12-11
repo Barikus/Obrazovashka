@@ -8,6 +8,6 @@ namespace Obrazovashka.Repositories.Interfaces
     {
         Task AddUserAsync(User user);
         Task<User> GetUserByEmailAsync(string email);
-        Task<User> UpdateUserAsync(User user);
+        Task UpdateUserAsync(User user);
     }
 }
