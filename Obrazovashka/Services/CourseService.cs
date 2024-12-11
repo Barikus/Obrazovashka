@@ -24,6 +24,7 @@ namespace Obrazovashka.Services
                 Title = courseDto.Title,
                 Description = courseDto.Description,
                 Content = courseDto.Content,
+                TeacherId = courseDto.TeacherId
             };
 
             await _courseRepository.AddCourseAsync(course);
