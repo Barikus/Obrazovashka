@@ -103,9 +103,22 @@ namespace Obrazovashka.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public Task<ProfileUpdateResult> UpdateProfileAsync(UserProfileDto profileDto)
+        public async Task<ProfileUpdateResult> UpdateProfileAsync(UserProfileDto profileDto)
         {
-            throw new NotImplementedException();
+            var user = await _userRepository.GetUserByEmailAsync(profileDto.Email);
+
+            if (user == null)
+            {
+                return new ProfileUpdateResult { Success = false, Message = "User not found." };
+            }
+
+            user.Username = profileDto.Username;
+            user.Email = profileDto.Email;
+
+            await _userRepository.UpdateUserAsync(user);
+
+            return new ProfileUpdateResult { Success = true, Message = "Profile updated successfully." };
         }
+
     }
 }

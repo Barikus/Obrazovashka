@@ -1,10 +1,8 @@
 ﻿namespace Obrazovashka.DTOs
 {
-    public class FeedbackDto
+    public class UserLoginDto
     {
-        public int UserId { get; set; }
-        public int CourseId { get; set; }
-        public string Comment { get; set; }
-        public int Rating { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
     }
 }

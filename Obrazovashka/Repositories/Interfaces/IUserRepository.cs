@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Obrazovashka.Models;
 
 namespace Obrazovashka.Repositories.Interfaces
@@ -7,5 +8,6 @@ namespace Obrazovashka.Repositories.Interfaces
     {
         Task AddUserAsync(User user);
         Task<User> GetUserByEmailAsync(string email);
+        Task<User> UpdateUserAsync(User user);
     }
 }
