@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Obrazovashka.DTOs;
 using Obrazovashka.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Obrazovashka.Controllers
 {
@@ -11,14 +12,17 @@ namespace Obrazovashka.Controllers
     {
         private readonly IUserService _userService;
 
-        public UsersController(IUserService userService)
+        private readonly ILogger<UsersController> _logger;
+
+        public UsersController(IUserService userService, ILogger<UsersController> logger)
         {
             _userService = userService;
+            _logger = logger;
         }
 
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(UserRegistrationDto registrationDto)
+        public async Task<IActionResult> Register([FromForm] UserRegistrationDto registrationDto)
         {
             var result = await _userService.RegisterUserAsync(registrationDto);
             if (result.Success)
@@ -29,7 +33,7 @@ namespace Obrazovashka.Controllers
 
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(UserLoginDto loginDto)
+        public async Task<IActionResult> Login([FromForm] UserLoginDto loginDto)
         {
             var result = await _userService.LoginUserAsync(loginDto);
             if (result.Success)

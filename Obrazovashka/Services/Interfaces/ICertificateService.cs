@@ -5,6 +5,6 @@ namespace Obrazovashka.Services
 {
     public interface ICertificateService
     {
-        Task<RegistrationResult> GenerateCertificateAsync(int userId, int courseId);
+        Task<CertificateResult> GenerateCertificateAsync(int userId, int courseId);
     }
 }
