@@ -8,7 +8,8 @@ namespace Obrazovashka.Models
         public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
+        public string[] Tags { get; set; }
+        public string AuthorId { get; set; }
         public string Content { get; set; }
-        public int TeacherId { get; set; }
     }
 }

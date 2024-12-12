@@ -6,6 +6,6 @@
         public string Title { get; set; }
         public string Description { get; set; }
         public string Content { get; set; }
-        public string InstructorName { get; set; }
+        public string TeacherId { get; set; }
     }
 }
