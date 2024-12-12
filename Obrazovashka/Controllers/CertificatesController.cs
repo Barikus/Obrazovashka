@@ -10,9 +10,12 @@ namespace Obrazovashka.Controllers
     {
         private readonly ICertificateService _certificateService;
 
-        public CertificatesController(ICertificateService certificateService)
+        private readonly ILogger<CertificatesController> _logger;
+
+        public CertificatesController(ICertificateService certificateService, ILogger<CertificatesController> logger)
         {
             _certificateService = certificateService;
+            _logger = logger;
         }
 
         [HttpGet("{userId}/course/{courseId}")]

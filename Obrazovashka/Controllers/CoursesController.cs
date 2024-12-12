@@ -13,9 +13,12 @@ namespace Obrazovashka.Controllers
     {
         private readonly ICourseService _courseService;
 
-        public CoursesController(ICourseService courseService)
+        private readonly ILogger<CoursesController> _logger;
+
+        public CoursesController(ICourseService courseService, ILogger<CoursesController> logger)
         {
             _courseService = courseService;
+            _logger = logger;
         }
 
         [HttpPost]

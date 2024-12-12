@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Obrazovashka.DTOs;
 using Obrazovashka.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace Obrazovashka.Controllers
 {
@@ -12,9 +13,12 @@ namespace Obrazovashka.Controllers
     {
         private readonly IEnrollmentService _enrollmentService;
 
-        public EnrollmentsController(IEnrollmentService enrollmentService)
+        private readonly ILogger<EnrollmentsController> _logger;
+
+        public EnrollmentsController(IEnrollmentService enrollmentService, ILogger<EnrollmentsController> logger)
         {
             _enrollmentService = enrollmentService;
+            _logger = logger;
         }
 
         [HttpPost]
