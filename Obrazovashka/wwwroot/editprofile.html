@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактирование профиля</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <div class="container mt-5">
+        <h2>Редактирование профиля</h2>
+        <form id="editProfileForm">
+            <div class="form-group">
+                <label for="Username">Имя пользователя:</label>
+                <input type="text" id="Username" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label for="Email">Электронная почта:</label>
+                <input type="email" id="Email" class="form-control" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Загрузка данных профиля
+            $.ajax({
+                url: '/api/users/profile',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token') // Получение токена
+                },
+                success: function (data) {
+                    $('#Username').val(data.username);
+                    $('#Email').val(data.email);
+                },
+                error: function () {
+                    alert('Не удалось загрузить данные профиля.');
+                }
+            });
+
+            // Обработчик для сохранения изменений
+            $('#editProfileForm').on('submit', function (e) {
+                e.preventDefault();
+
+                var profileData = {
+                    Username: $('#Username').val(),
+                    Email: $('#Email').val(),
+                };
+
+                $.ajax({
+                    url: '/api/users/profile',
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(profileData),
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    success: function (result) {
+                        alert('Профиль успешно обновлён!');
+                        window.location.href = '/profile.html';
+                    },
+                    error: function (error) {
+                        console.error('Ошибка при обновлении профиля:', error);
+                        alert('Ошибка: ' + error.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

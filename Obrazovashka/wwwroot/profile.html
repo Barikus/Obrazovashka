@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Просмотр профиля</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <div class="container mt-5">
+        <h2>Профиль пользователя</h2>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Имя пользователя:</h5>
+                <p id="username" class="card-text">Загрузка...</p>
+
+                <h5 class="card-title">Электронная почта:</h5>
+                <p id="email" class="card-text">Загрузка...</p>
+            </div>
+        </div>
+        <button id="editProfileButton" class="btn btn-primary mt-3">Редактировать профиль</button>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Загрузка данных профиля
+            $.ajax({
+                url: '/api/users/profile',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function (data) {
+                    $('#username').text(data.username);
+                    $('#email').text(data.email);
+                },
+                error: function () {
+                    alert('Не удалось загрузить данные профиля.');
+                }
+            });
+
+            // Обработка нажатия кнопки "Редактировать профиль"
+            $('#editProfileButton').on('click', function () {
+                window.location.href = '/editProfile.html'; // Перенаправление на страницу редактирования профиля
+            });
+        });
+    </script>
+
+</body>
+</html>

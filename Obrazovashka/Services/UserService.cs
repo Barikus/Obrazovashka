@@ -28,7 +28,7 @@ namespace Obrazovashka.Services
             var user = await _userRepository.GetUserByEmailAsync(loginDto.Email);
             if (user == null || !VerifyPasswordHash(loginDto.Password, user.PasswordHash))
             {
-                return new LoginResult { Success = false, Message = "Invalid username or password" }; // Ошибка 401
+                return new LoginResult { Success = false, Message = "Неправильная почта или пароль" }; // Ошибка 401
             }
 
             var token = GenerateJwtToken(user);
@@ -38,11 +38,13 @@ namespace Obrazovashka.Services
 
         public async Task<RegistrationResult> RegisterUserAsync(UserRegistrationDto registrationDto)
         {
-            if (await _userRepository.GetUserByEmailAsync(registrationDto.Username) != null)
+            // Проверяем, существует ли пользователь с этой электронной почтой
+            if (await _userRepository.GetUserByEmailAsync(registrationDto.Email) != null)
             {
-                return new RegistrationResult { Success = false, Message = "User already exists" };
+                return new RegistrationResult { Success = false, Message = "Пользователь с такой электронной почтой уже существует!" };
             }
 
+            // Создаём нового пользователя, если проверки пройдены
             var user = new User
             {
                 Username = registrationDto.Username,
@@ -53,8 +55,9 @@ namespace Obrazovashka.Services
 
             await _userRepository.AddUserAsync(user);
 
-            return new RegistrationResult { Success = true, Message = "User registered successfully" };
+            return new RegistrationResult { Success = true, Message = "Пользователь успешно зарегистрирован." };
         }
+
 
         private string HashPassword(string password)
         {
@@ -79,7 +82,6 @@ namespace Obrazovashka.Services
             return storedPasswordHash.SequenceEqual(computedHash);
         }
 
-
         private string GenerateJwtToken(User user)
         {
             var claims = new[]
@@ -89,18 +91,31 @@ namespace Obrazovashka.Services
                 new Claim(ClaimTypes.Role, user.Role)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-            var expiration = DateTime.Now.AddHours(1);
+            var expiration = DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["DurationInMinutes"]));
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
+                issuer: _configuration["Issuer"],
+                audience: _configuration["Audience"],
                 claims: claims,
                 expires: expiration,
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+
+        public async Task<UserProfileDto> GetUserByIdAsync(int userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return null;
+
+            return new UserProfileDto
+            {
+                Username = user.Username,
+                Email = user.Email
+            };
         }
 
         public async Task<ProfileUpdateResult> UpdateProfileAsync(UserProfileDto profileDto)
@@ -109,7 +124,7 @@ namespace Obrazovashka.Services
 
             if (user == null)
             {
-                return new ProfileUpdateResult { Success = false, Message = "User not found." };
+                return new ProfileUpdateResult { Success = false, Message = "Пользователь не найден." };
             }
 
             user.Username = profileDto.Username;
@@ -117,7 +132,7 @@ namespace Obrazovashka.Services
 
             await _userRepository.UpdateUserAsync(user);
 
-            return new ProfileUpdateResult { Success = true, Message = "Profile updated successfully." };
+            return new ProfileUpdateResult { Success = true, Message = "Профиль успешно обновлён."};
         }
 
     }

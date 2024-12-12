@@ -4,26 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация пользователя</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
-    <h1>Регистрация</h1>
-    <form id="registrationForm" method="POST" action="/api/users/register">
-        <label for="username">Имя пользователя:</label>
-        <input type="text" id="username" name="username" required><br>
 
-        <label for="email">Электронная почта:</label>
-        <input type="email" id="email" name="email" required><br>
+    <div class="container mt-5">
+        <h1>Регистрация</h1>
+        <form id="registrationForm">
+            <div class="form-group">
+                <label for="username">Имя пользователя:</label>
+                <input type="text" id="username" class="form-control" required>
+            </div>
 
-        <label for="password">Пароль:</label>
-        <input type="password" id="password" name="password" required><br>
+            <div class="form-group">
+                <label for="email">Электронная почта:</label>
+                <input type="email" id="email" class="form-control" required>
+            </div>
 
-        <label for="role">Роль:</label>
-        <select id="role" name="role" required>
-            <option value="Student">Студент</option>
-            <option value="Teacher">Преподаватель</option>
-        </select><br>
+            <div class="form-group">
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
 
-        <button type="submit">Зарегистрироваться</button>
-    </form>
+            <div class="form-group">
+                <label for="role">Роль:</label>
+                <select id="role" class="form-control" required>
+                    <option value="Student">Студент</option>
+                    <option value="Teacher">Преподаватель</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#registrationForm').on('submit', function (e) {
+                e.preventDefault(); // Предотвратить стандартное поведение формы
+
+                var registrationData = {
+                    username: $('#username').val(),
+                    email: $('#email').val(),
+                    password: $('#password').val(),
+                    role: $('#role').val()
+                };
+
+                $.ajax({
+                    url: '/api/users/register',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(registrationData),
+                    success: function (response) {
+                        alert('Вы успешно зарегистрировались!');
+                        window.location.href = '/login.html';
+                    },
+                    error: function (xhr) {
+                        console.error('Ошибка регистрации:', xhr.responseText);
+                        alert('Ошибка: ' + xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

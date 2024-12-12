@@ -1,12 +1,11 @@
-using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Obrazovashka.Data;
 using Obrazovashka.Repositories.Interfaces;
 using Obrazovashka.Repositories;
 using Obrazovashka.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Logging;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +16,7 @@ builder.Logging.AddDebug();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddRazorPages();
 
 // Подключение к PostgreSQL
 string connectionString = File.ReadAllText("db_config.txt").Trim();
@@ -33,19 +33,19 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddScoped<ICertificateService, CertificateService>();
 
-builder.Services.AddControllers();
+// Добавляем конфигурацию JWT
+builder.Configuration.AddIniFile("jwt_config.txt", optional: true, reloadOnChange: true);
 
-// Настройка JWT аутентификации
-var jwtConfig = new Dictionary<string, string>();
-foreach (var line in File.ReadAllLines("jwt_config.txt"))
+var jwtKey = builder.Configuration["Key"];
+var issuer = builder.Configuration["Issuer"];
+var audience = builder.Configuration["Audience"];
+
+if (string.IsNullOrEmpty(jwtKey) || string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(audience))
 {
-    var parts = line.Split('=');
-    if (parts.Length == 2)
-    {
-        jwtConfig[parts[0].Trim()] = parts[1].Trim();
-    }
+    throw new InvalidOperationException("JWT configuration is not properly set.");
 }
 
+var key = Encoding.UTF8.GetBytes(jwtKey);
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -59,11 +59,19 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtConfig["Issuer"],
-        ValidAudience = jwtConfig["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(jwtConfig["Key"])),
+        ValidIssuer = issuer,
+        ValidAudience = audience,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
         ClockSkew = TimeSpan.Zero
     };
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder => builder.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader());
 });
 
 var app = builder.Build();
@@ -74,27 +82,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
-else
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthorization();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapRazorPages();
 app.MapControllers();
-app.UseStaticFiles();
+
+app.UseCors("AllowAll");    
 
 app.Run();
