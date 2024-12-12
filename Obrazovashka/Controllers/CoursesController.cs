@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Obrazovashka.DTOs;
 using Obrazovashka.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Obrazovashka.Controllers
 {
@@ -18,6 +19,7 @@ namespace Obrazovashka.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> CreateCourse([FromBody] CourseCreateDto courseDto)
         {
             var result = await _courseService.CreateCourseAsync(courseDto);
@@ -45,6 +47,7 @@ namespace Obrazovashka.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> UpdateCourse(int id, [FromBody] CourseUpdateDto courseDto)
         {
             var result = await _courseService.UpdateCourseAsync(id, courseDto);
@@ -55,6 +58,7 @@ namespace Obrazovashka.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> DeleteCourse(int id)
         {
             var result = await _courseService.DeleteCourseAsync(id);

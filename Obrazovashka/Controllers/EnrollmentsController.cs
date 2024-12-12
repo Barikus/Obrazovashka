@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Obrazovashka.DTOs;
 using Obrazovashka.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Obrazovashka.Controllers
 {
@@ -17,6 +18,7 @@ namespace Obrazovashka.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Enroll([FromBody] EnrollmentDto enrollmentDto)
         {
             var result = await _enrollmentService.EnrollInCourseAsync(enrollmentDto);
@@ -27,6 +29,7 @@ namespace Obrazovashka.Controllers
         }
 
         [HttpPost("{courseId}/feedback")]
+        [Authorize]
         public async Task<IActionResult> LeaveFeedback(int courseId, [FromBody] FeedbackDto feedbackDto)
         {
             var result = await _enrollmentService.LeaveFeedbackAsync(courseId, feedbackDto);
