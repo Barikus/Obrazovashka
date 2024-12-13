@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Obrazovashka.DTOs;
 using Obrazovashka.Services;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Obrazovashka.Controllers
 {
@@ -12,7 +13,6 @@ namespace Obrazovashka.Controllers
     public class CoursesController : ControllerBase
     {
         private readonly ICourseService _courseService;
-
         private readonly ILogger<CoursesController> _logger;
 
         public CoursesController(ICourseService courseService, ILogger<CoursesController> logger)
@@ -23,13 +23,32 @@ namespace Obrazovashka.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Teacher")]
-        public async Task<IActionResult> CreateCourse([FromBody] CourseCreateDto courseDto)
+        public async Task<IActionResult> CreateCourse([FromBody] CourseCreateDto courseCreateDto)
         {
-            var result = await _courseService.CreateCourseAsync(courseDto);
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            courseCreateDto.AuthorId = userId;
+
+            var result = await _courseService.CreateCourseAsync(courseCreateDto);
             if (result.Success)
+            {
                 return CreatedAtAction(nameof(GetCourse), new { id = result.CourseId }, result);
+            }
 
             return BadRequest(result);
+        }
+
+
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Teacher")]
+        public async Task<IActionResult> UpdateCourse(int id, [FromBody] CourseUpdateDto courseDto)
+        {
+            var result = await _courseService.UpdateCourseAsync(id, courseDto);
+            if (result.Success)
+                return Ok(result);
+
+            return NotFound();
         }
 
         [HttpGet]
@@ -45,17 +64,6 @@ namespace Obrazovashka.Controllers
             var course = await _courseService.GetCourseByIdAsync(id);
             if (course != null)
                 return Ok(course);
-
-            return NotFound();
-        }
-
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Teacher")]
-        public async Task<IActionResult> UpdateCourse(int id, [FromBody] CourseUpdateDto courseDto)
-        {
-            var result = await _courseService.UpdateCourseAsync(id, courseDto);
-            if (result.Success)
-                return Ok(result);
 
             return NotFound();
         }

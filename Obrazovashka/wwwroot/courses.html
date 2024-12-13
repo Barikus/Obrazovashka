@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Все курсы</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <div class="container mt-5">
+        <h1>Все курсы</h1>
+        <div id="coursesList" class="list-group"></div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: '/api/courses',
+                type: 'GET',
+                success: function (courses) {
+                    if (courses.length === 0) {
+                        $('#coursesList').append('<div class="list-group-item">Нет доступных курсов.</div>');
+                    } else {
+                        courses.forEach(course => {
+                            $('#coursesList').append(`<a href="/course.html?id=${course.id}" class="list-group-item list-group-item-action">${course.title}</a>`);
+                        });
+                    }
+                },
+                error: function () {
+                    alert('Не удалось загрузить курсы.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

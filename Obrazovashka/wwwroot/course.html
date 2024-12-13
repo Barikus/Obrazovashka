@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Детали курса</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <div class="container mt-5">
+        <h1 id="courseTitle">Загрузка...</h1>
+        <p><strong>Описание:</strong> <span id="courseDescription"></span></p>
+        <p><strong>Теги:</strong> <span id="courseTags"></span></p>
+        <h3>Контент:</h3>
+        <pre id="courseContent"></pre>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const courseId = urlParams.get('id');
+
+            $.ajax({
+                url: `/api/courses/${courseId}`,
+                type: 'GET',
+                success: function (course) {
+                    $('#courseTitle').text(course.title);
+                    $('#courseDescription').text(course.description);
+                    $('#courseTags').text(course.tags.join(', '));
+                    $('#courseContent').text(course.content);
+                },
+                error: function () {
+                    alert('Не удалось загрузить курс.');
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

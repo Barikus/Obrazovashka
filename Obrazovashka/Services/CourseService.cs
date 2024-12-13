@@ -17,18 +17,41 @@ namespace Obrazovashka.Services
             _courseRepository = courseRepository;
         }
 
-        public async Task<CourseCreateResult> CreateCourseAsync(CourseCreateDto courseDto)
+        public async Task<CourseCreateResult> CreateCourseAsync(CourseCreateDto courseCreateDto)
         {
             var course = new Course
             {
-                Title = courseDto.Title,
-                Description = courseDto.Description,
-                Content = courseDto.Content,
-                TeacherId = courseDto.TeacherId
+                Title = courseCreateDto.Title,
+                Description = courseCreateDto.Description,
+                Tags = courseCreateDto.Tags,
+                AuthorId = courseCreateDto.AuthorId,
+                Content = courseCreateDto.Content
             };
 
             await _courseRepository.AddCourseAsync(course);
             return new CourseCreateResult { Success = true, CourseId = course.Id };
+        }
+
+
+        private string ParseCourseContent(string content)
+        {
+            var parts = content.Split("<np>");
+            var parsedContent = new List<string>();
+
+            foreach (var part in parts)
+            {
+                if (part.Contains("<v>")) // видео
+                {
+                    var videoLinks = part.Split("<v>", StringSplitOptions.RemoveEmptyEntries);
+                    parsedContent.AddRange(videoLinks);
+                }
+                else
+                {
+                    parsedContent.Add(part); // обычный текст
+                }
+            }
+
+            return string.Join("<np>", parsedContent);
         }
 
         public async Task<IEnumerable<CourseDto>> GetCoursesAsync()
