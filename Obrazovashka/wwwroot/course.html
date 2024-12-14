@@ -6,35 +6,99 @@
     <title>Детали курса</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .content-area {
+            border: 1px solid #ccc;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            margin-top: 10px;
+            white-space: pre-wrap; /* Сохраняем пробелы и переносы строк */
+        }
+    </style>
 </head>
 <body>
-
     <div class="container mt-5">
         <h1 id="courseTitle">Загрузка...</h1>
         <p><strong>Описание:</strong> <span id="courseDescription"></span></p>
         <p><strong>Теги:</strong> <span id="courseTags"></span></p>
-        <h3>Контент:</h3>
-        <pre id="courseContent"></pre>
+        <h3 id="currentPage"></h3>
+        <button id="prevPage" class="btn btn-primary" disabled>Предыдущая</button>
+        <button id="nextPage" class="btn btn-primary">Следующая</button>
+        <div id="courseContent" class="content-area"></div>
     </div>
 
     <script>
         $(document).ready(function () {
             const urlParams = new URLSearchParams(window.location.search);
             const courseId = urlParams.get('id');
+            let courseContents = [];
+            let currentPage = 0;
 
-            $.ajax({
-                url: `/api/courses/${courseId}`,
-                type: 'GET',
-                success: function (course) {
-                    $('#courseTitle').text(course.title);
-                    $('#courseDescription').text(course.description);
-                    $('#courseTags').text(course.tags.join(', '));
-                    $('#courseContent').text(course.content);
-                },
-                error: function () {
-                    alert('Не удалось загрузить курс.');
+            // Функция для загрузки данных курса
+            function loadCourse() {
+                $.ajax({
+                    url: `/api/courses/${courseId}`,
+                    type: 'GET',
+                    success: function (course) {
+                        $('#courseTitle').text(course.title);
+                        $('#courseDescription').text(course.description);
+                        $('#courseTags').text(course.tags && course.tags.length ? course.tags.join(', ') : 'Нет тегов');
+                        loadCourseContents(course.contentPath); // Загрузка содержимого
+                    },
+                    error: function () {
+                        alert('Не удалось загрузить курс.');
+                    }
+                });
+            }
+
+            // Функция для загрузки содержимого курса
+            function loadCourseContents(contentPath) {
+                $.ajax({
+                    url: `/api/courses/${courseId}/contents`,
+                    type: 'GET',
+                    success: function (contents) {
+                        courseContents = contents;
+                        displayPage(currentPage);
+                    },
+                    error: function () {
+                        alert('Не удалось загрузить содержание курса.');
+                    }
+                });
+            }
+
+            // Функция для отображения содержимого страницы
+            function displayPage(pageNumber) {
+                const markdownContent = courseContents[pageNumber];
+                if (markdownContent) {
+                    $('#courseContent').html(marked.parse(markdownContent));
+                    $('#currentPage').text(`Страница ${pageNumber + 1} из ${courseContents.length}`);
+
+                    // Управление кнопками навигации
+                    $('#prevPage').prop('disabled', pageNumber === 0);
+                    $('#nextPage').prop('disabled', pageNumber === courseContents.length - 1);
+                } else {
+                    $('#courseContent').html('<p>Контент не найден.</p>');
+                }
+            }
+
+            // Обработчики событий для кнопок навигации
+            $('#prevPage').click(function () {
+                if (currentPage > 0) {
+                    currentPage--;
+                    displayPage(currentPage);
                 }
             });
+
+            $('#nextPage').click(function () {
+                if (currentPage < courseContents.length - 1) {
+                    currentPage++;
+                    displayPage(currentPage);
+                }
+            });
+
+            loadCourse();
         });
     </script>
 

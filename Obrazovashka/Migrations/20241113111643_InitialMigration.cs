@@ -32,7 +32,7 @@ namespace Obrazovashka.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Title = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
-                    Content = table.Column<string>(type: "text", nullable: false)
+                    ContentPath   = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

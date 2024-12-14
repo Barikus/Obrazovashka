@@ -17,14 +17,16 @@
     <script>
         $(document).ready(function () {
             $.ajax({
-                url: '/api/courses',
+                url: '/api/courses/all',
                 type: 'GET',
                 success: function (courses) {
                     if (courses.length === 0) {
                         $('#coursesList').append('<div class="list-group-item">Нет доступных курсов.</div>');
                     } else {
                         courses.forEach(course => {
-                            $('#coursesList').append(`<a href="/course.html?id=${course.id}" class="list-group-item list-group-item-action">${course.title}</a>`);
+                            $('#coursesList').append(`
+                        <a href="/course.html?id=${course.id}" class="list-group-item list-group-item-action">${course.title}</a>
+                    `);
                         });
                     }
                 },

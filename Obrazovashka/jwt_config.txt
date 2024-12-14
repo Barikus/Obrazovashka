@@ -1,4 +1,4 @@
 Key=a33d4332a0a80c4542f8be5164fb9540c7e685649c1fe8a242b7e355c09c75b3
 Issuer=System
 Audience=User
-DurationInMinutes=30
+DurationInMinutes=720

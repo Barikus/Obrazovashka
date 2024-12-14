@@ -11,7 +11,7 @@
 
     <div class="container mt-5">
         <h2>Профиль пользователя</h2>
-        <div class="card">
+        <div class="card mb-4">
             <div class="card-body">
                 <h5 class="card-title">Имя пользователя:</h5>
                 <p id="username" class="card-text">Загрузка...</p>
@@ -20,6 +20,9 @@
                 <p id="email" class="card-text">Загрузка...</p>
             </div>
         </div>
+
+        <a href="/courses-my.html" class="btn btn-info mt-3">Мои курсы</a>
+
         <button id="editProfileButton" class="btn btn-primary mt-3">Редактировать профиль</button>
     </div>
 
@@ -43,7 +46,7 @@
 
             // Обработка нажатия кнопки "Редактировать профиль"
             $('#editProfileButton').on('click', function () {
-                window.location.href = '/editProfile.html'; // Перенаправление на страницу редактирования профиля
+                window.location.href = '/editProfile.html';
             });
         });
     </script>

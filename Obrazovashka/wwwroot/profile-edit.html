@@ -31,7 +31,7 @@
                 url: '/api/users/profile',
                 type: 'GET',
                 headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token') // Получение токена
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
                 },
                 success: function (data) {
                     $('#Username').val(data.username);

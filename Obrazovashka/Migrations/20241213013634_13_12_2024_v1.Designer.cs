@@ -56,7 +56,7 @@ namespace Obrazovashka.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Content")
+                    b.Property<string>("ContentPath  ")
                         .IsRequired()
                         .HasColumnType("text");
 

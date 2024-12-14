@@ -54,7 +54,7 @@ namespace Obrazovashka.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Content")
+                    b.Property<string>("ContentPath  ")
                         .IsRequired()
                         .HasColumnType("text");
 

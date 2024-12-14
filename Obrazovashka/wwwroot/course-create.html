@@ -7,27 +7,27 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
-<body>
 
+<body>
     <div class="container mt-5">
         <h1>Создание курса</h1>
-        <form id="createCourseForm">
+        <form id="createCourseForm" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="title">Тема:</label>
-                <input type="text" id="title" class="form-control" required>
+                <input type="text" id="title" class="form-control" name="Title" required>
             </div>
             <div class="form-group">
                 <label for="description">Описание:</label>
-                <textarea id="description" class="form-control" rows="3" required></textarea>
+                <textarea id="description" class="form-control" name="Description" rows="3" required></textarea>
             </div>
             <div class="form-group">
                 <label for="tags">Теги (через запятую):</label>
-                <input type="text" id="tags" class="form-control" required>
+                <input type="text" id="tags" class="form-control" name="Tags" required>
             </div>
             <div class="form-group">
-                <label for="content">Контент курса:</label>
-                <textarea id="content" class="form-control" rows="5" required></textarea>
-                <small class="form-text text-muted">Используйте <code>&lt;np&gt;</code> для разделителей, <code>&lt;v&gt;</code> для видео, <code>&lt;p&gt;</code> для баллов.</small>
+                <label for="contentFiles">Загрузить файл(ы) курса (.txt):</label>
+                <input type="file" id="contentFiles" class="form-control-file" name="ContentFiles" accept=".txt" multiple required>
+                <small class="form-text text-muted">Вы можете загрузить несколько файлов. Только .txt файлы.</small>
             </div>
             <button type="submit" class="btn btn-primary">Создать курс</button>
         </form>
@@ -35,37 +35,42 @@
 
     <script>
         $(document).ready(function () {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Пожалуйста, авторизуйтесь.');
+                window.location.href = '/login.html';
+                return;
+            }
+
             $('#createCourseForm').on('submit', function (e) {
                 e.preventDefault();
-
-                var courseData = {
-                    Title: $('#title').val(),
-                    Description: $('#description').val(),
-                    Tags: $('#tags').val().split(',').map(tag => tag.trim()),
-                    Content: $('#content').val()
-                };
+                var formData = new FormData(this);
 
                 $.ajax({
                     url: '/api/courses',
                     type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(courseData),
+                    processData: false,
+                    contentType: false,
+                    data: formData,
                     headers: {
-                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                        'Authorization': 'Bearer ' + token
                     },
-                    success: function () {
+                    success: function (response) {
                         alert('Курс успешно создан!');
-                        window.location.href = '/courses.html';
+                        window.location.href = '/courses-all.html';
                     },
                     error: function (xhr) {
-                        if (xhr.status == 401)
-                        {
-                            alert('У вас нет необходимых прав.');
+                        let errorMessage = 'Произошла ошибка. Попробуйте еще раз.';
+
+                        if (xhr.status == 401) {
+                            errorMessage = 'Пожалуйста, авторизируйтесь.';
+                        } else if (xhr.status == 403) {
+                            errorMessage = 'У вас нет необходимых прав.';
+                        } else if (xhr.responseText) {
+                            errorMessage = 'Ошибка: ' + xhr.responseText;
                         }
-                        else
-                        {
-                            alert('Ошибка: ' + xhr.responseText);
-                        }
+
+                        alert(errorMessage);
                     }
                 });
             });

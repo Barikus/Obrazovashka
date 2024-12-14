@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои курсы</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <div class="container mt-5">
+        <h1>Мои курсы</h1>
+        <div id="coursesList" class="list-group"></div>
+        <a href="/course-create.html" class="btn btn-primary mt-3">Создать новый курс</a>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Пожалуйста, авторизуйтесь.');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            $.ajax({
+                url: '/api/courses/my',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function (courses) {
+                    if (courses.length === 0) {
+                        $('#coursesList').append('<div class="list-group-item">Нет доступных курсов.</div>');
+                    } else {
+                        courses.forEach(course => {
+                            $('#coursesList').append(`
+                        <a href="/course-edit.html?id=${course.id}" class="list-group-item list-group-item-action">
+                            ${course.title}
+                            <small class="text-muted"> - Нажмите для редактирования</small>
+                        </a>
+                    `);
+                        });
+                    }
+                },
+                error: function () {
+                    alert('Не удалось загрузить курсы.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

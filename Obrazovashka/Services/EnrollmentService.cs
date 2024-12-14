@@ -25,7 +25,7 @@ namespace Obrazovashka.Services
             };
 
             await _enrollmentRepository.AddEnrollmentAsync(enrollment);
-            return new EnrollmentResult { Success = true, Message = "Successfully enrolled." };
+            return new EnrollmentResult { Success = true, Message = "Пользователь подписался." };
         }
 
         public Task<FeedbackResult> LeaveFeedbackAsync(int courseId, FeedbackDto feedbackDto)

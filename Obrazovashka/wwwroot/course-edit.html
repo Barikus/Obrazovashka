@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактировать курс</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <div class="container mt-5">
+        <h1>Редактировать курс</h1>
+        <form id="updateCourseForm" enctype="multipart/form-data">
+            <input type="hidden" id="courseId" name="id">
+            <div class="form-group">
+                <label for="courseTitle">Название курса:</label>
+                <input type="text" class="form-control" id="courseTitle" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="courseDescription">Описание:</label>
+                <textarea class="form-control" id="courseDescription" name="description" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="courseTags">Теги (через запятую):</label>
+                <input type="text" class="form-control" id="courseTags" name="tags">
+            </div>
+            <div class="form-group">
+                <label>Существующие файлы:</label>
+                <ul id="existingFiles" class="list-group">
+                    <!-- Здесь будут отображаться файлы -->
+                </ul>
+            </div>
+            <div class="form-group">
+                <label for="courseFiles">Загрузить новые файлы (.txt):</label>
+                <input type="file" class="form-control-file" id="courseFiles" name="contentFiles" accept=".txt" multiple>
+                <small class="form-text text-muted">Выберите файлы для загрузки. Только .txt файлы.</small>
+            </div>
+            <button type="submit" class="btn btn-primary">Обновить курс</button>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Пожалуйста, авторизуйтесь.');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const courseId = urlParams.get('id');
+
+            // Загрузка текущих данных курса
+            $.ajax({
+                url: `/api/courses/${courseId}`,
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function (course) {
+                    $('#courseId').val(course.id);
+                    $('#courseTitle').val(course.title);
+                    $('#courseDescription').val(course.description);
+                    $('#courseTags').val(course.tags.join(', '));
+                    loadExistingFiles();
+                },
+                error: function (xhr) {
+                    if (xhr.status === 403) {
+                        alert('У вас нет прав доступа к этому курсу.');
+                    } else {
+                        alert('Не удалось загрузить информацию о курсе.');
+                    }
+                }
+            });
+
+            // Загрузка существующих файлов
+            function loadExistingFiles() {
+                $.ajax({
+                    url: `/api/courses/${courseId}/files`,
+                    type: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    success: function (files) {
+                        $('#existingFiles').empty(); // Очищаем список файлов
+                        files.forEach(file => {
+                            $('#existingFiles').append(`
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${file}
+                                    <button class="btn btn-danger btn-sm remove-file" data-file="${file}">Удалить</button>
+                                </li>
+                            `);
+                        });
+                    },
+                    error: function () {
+                        alert('Не удалось загрузить файлы курса.');
+                    }
+                });
+            }
+
+            // Обработка отправки формы
+            $('#updateCourseForm').submit(function (event) {
+                event.preventDefault();
+                const formData = new FormData(this);
+
+                if (!$('#courseFiles').val()) {
+                    formData.delete('contentFiles');
+                }
+
+                $.ajax({
+                    url: `/api/courses/${courseId}`,
+                    type: 'PUT',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function () {
+                        alert('Курс успешно обновлён!');
+                        window.location.href = '/courses-my.html';
+                    },
+                    error: function (xhr) {
+                        let errorMessage = 'Не удалось обновить курс.';
+                        if (xhr.status === 401) {
+                            errorMessage = 'Пожалуйста, авторизуйтесь.';
+                        } else if (xhr.status === 403) {
+                            errorMessage = 'У вас нет необходимых прав.';
+                        } else if (xhr.responseText) {
+                            errorMessage = 'Ошибка: ' + xhr.responseText;
+                        }
+                        alert(errorMessage);
+                    }
+                });
+            });
+
+            // Обработчик для удаления файла
+            $(document).on('click', '.remove-file', function () {
+                const fileName = $(this).data('file');
+                if (confirm(`Вы действительно хотите удалить файл: ${fileName}?`)) {
+                    $.ajax({
+                        url: `/api/courses/${courseId}/files/${fileName}`,
+                        type: 'DELETE',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        },
+                        success: function () {
+                            alert('Файл успешно удалён!');
+                            loadExistingFiles(); // Перезагружаем список файлов
+                        },
+                        error: function (xhr) {
+                            alert('Ошибка при удалении файла: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

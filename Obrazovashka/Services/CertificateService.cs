@@ -15,22 +15,9 @@ namespace Obrazovashka.Services
             _enrollmentRepository = enrollmentRepository;
         }
 
-        public async Task<CertificateResult> GenerateCertificateAsync(int userId, int courseId)
+        Task<CertificateResult> ICertificateService.GenerateCertificateAsync(int userId, int courseId)
         {
-            var completion = await _enrollmentRepository.GetEnrollmentAsync(userId, courseId);
-
-            if (completion == null) return new CertificateResult { Success = false };
-
-            var certificateUrl = $"http://myapp.com/certificates/{userId}/{courseId}.pdf";
-
-            var certificate = new Certificate
-            {
-                EnrollmentId = completion.Id,
-                CertificateUrl = certificateUrl
-            };
-    
-            return new CertificateResult { Success = true, CertificateUrl = certificateUrl };
+            throw new NotImplementedException();
         }
-
     }
 }
