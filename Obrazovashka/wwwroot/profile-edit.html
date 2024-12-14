@@ -16,10 +16,6 @@
                 <label for="Username">Имя пользователя:</label>
                 <input type="text" id="Username" class="form-control" required />
             </div>
-            <div class="form-group">
-                <label for="Email">Электронная почта:</label>
-                <input type="email" id="Email" class="form-control" required />
-            </div>
             <button type="submit" class="btn btn-primary">Сохранить изменения</button>
         </form>
     </div>
@@ -35,7 +31,6 @@
                 },
                 success: function (data) {
                     $('#Username').val(data.username);
-                    $('#Email').val(data.email);
                 },
                 error: function () {
                     alert('Не удалось загрузить данные профиля.');
@@ -47,8 +42,7 @@
                 e.preventDefault();
 
                 var profileData = {
-                    Username: $('#Username').val(),
-                    Email: $('#Email').val(),
+                    username: $('#Username').val(),
                 };
 
                 $.ajax({

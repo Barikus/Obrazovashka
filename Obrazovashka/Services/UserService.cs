@@ -105,7 +105,6 @@ namespace Obrazovashka.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-
         public async Task<UserProfileDto> GetUserByIdAsync(int userId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
@@ -128,12 +127,10 @@ namespace Obrazovashka.Services
             }
 
             user.Username = profileDto.Username;
-            user.Email = profileDto.Email;
 
             await _userRepository.UpdateUserAsync(user);
 
-            return new ProfileUpdateResult { Success = true, Message = "Профиль успешно обновлён."};
+            return new ProfileUpdateResult { Success = true, Message = "Профиль успешно обновлён." };
         }
-
     }
 }

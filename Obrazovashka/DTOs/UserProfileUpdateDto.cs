@@ -1,8 +1,7 @@
 ﻿namespace Obrazovashka.DTOs
 {
-    public class UserProfileDto
+    public class UserProfileUpdateDto
     {
         public string Username { get; set; }
-        public string Email { get; set; }
     }
 }

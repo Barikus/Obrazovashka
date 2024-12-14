@@ -48,20 +48,14 @@ namespace Obrazovashka.Controllers
         [Authorize]
         public async Task<IActionResult> GetProfile()
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim))
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
             {
                 _logger.LogWarning("Пользователь не авторизован.");
                 return Unauthorized();
             }
 
-            if (!int.TryParse(userIdClaim, out var userId))
-            {
-                _logger.LogWarning("Неверный идентификатор пользователя: {UserIdClaim}", userIdClaim);
-                return BadRequest("Неверный идентификатор пользователя.");
-            }
-
-            var userProfile = await _userService.GetUserByIdAsync(userId);
+            var userProfile = await _userService.GetUserByIdAsync(int.Parse(userId));
             if (userProfile == null)
             {
                 _logger.LogWarning("Профиль пользователя с ID {UserId} не найден.", userId);
@@ -74,14 +68,20 @@ namespace Obrazovashka.Controllers
 
         [HttpPut("profile")]
         [Authorize]
-        public async Task<IActionResult> UpdateProfile([FromBody] UserProfileDto profileDto)
+        public async Task<IActionResult> UpdateProfile([FromBody] UserProfileUpdateDto profileDto)
         {
             if (profileDto == null)
             {
                 return BadRequest("Профиль пустой.");
             }
 
-            var result = await _userService.UpdateProfileAsync(profileDto);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userProfile = await _userService.GetUserByIdAsync(int.Parse(userId));
+            
+            // данные, которые меняем
+            userProfile.Username = profileDto.Username;
+
+            var result = await _userService.UpdateProfileAsync(userProfile);
             if (!result.Success)
             {
                 return BadRequest(result.Message);
