@@ -8,13 +8,13 @@ namespace Obrazovashka.Services
     public interface ICourseService
     {
         Task<CourseCreateResult> CreateCourseAsync(CourseDto courseDto);
-        Task<IEnumerable<CourseDto>> GetCoursesAsync();
-        Task<IEnumerable<CourseDto>> GetCoursesByUserIdAsync(int userId);
-        Task<CourseDto> GetCourseByIdAsync(int id);
-        Task<IEnumerable<string>> GetCourseContentsAsync(string courseFolderPath);
-        Task<IEnumerable<string>> GetCourseFilesAsync(string courseFolderPath);
+        Task<IList<CourseDto>> GetCoursesAsync();
+        Task<IList<CourseDto>> GetCoursesByUserIdAsync(int userId);
+        Task<CourseDto> GetCourseByIdAsync(int courseId);
+        Task<IList<string>> GetCourseContentsAsync(string courseFolderPath);
+        Task<IList<string>> GetCourseFilesAsync(string courseFolderPath);
         Task<CourseUpdateResult> UpdateCourseAsync(int id, CourseUpdateDto courseDto);
-        Task<DeletionResult> DeleteCourseAsync(int id);
+        Task<DeletionResult> DeleteCourseAsync(int courseId);
         Task<string> SaveFileAsync(IFormFile file, string courseFolderPath);
         Task<DeletionResult> DeleteFileAsync(int courseId, string fileName);
     }

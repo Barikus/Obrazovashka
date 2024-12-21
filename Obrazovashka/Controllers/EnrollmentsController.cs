@@ -26,7 +26,7 @@ namespace Obrazovashka.Controllers
         public async Task<IActionResult> Enroll([FromBody] EnrollmentDto enrollmentDto)
         {
             var result = await _enrollmentService.EnrollInCourseAsync(enrollmentDto);
-            if (result.Success)
+            if (result.Success ?? false)
                 return Ok(result);
 
             return BadRequest(result);
@@ -37,7 +37,7 @@ namespace Obrazovashka.Controllers
         public async Task<IActionResult> LeaveFeedback(int courseId, [FromBody] FeedbackDto feedbackDto)
         {
             var result = await _enrollmentService.LeaveFeedbackAsync(courseId, feedbackDto);
-            if (result.Success)
+            if (result.Success ?? false)
                 return Ok(result);
 
             return BadRequest(result);

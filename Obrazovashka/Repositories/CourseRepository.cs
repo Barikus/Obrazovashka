@@ -22,9 +22,9 @@ namespace Obrazovashka.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteCourseAsync(int id)
+        public async Task DeleteCourseAsync(int courseId)
         {
-            var course = await GetCourseByIdAsync(id);
+            var course = await GetCourseByIdAsync(courseId);
             if (course != null)
             {
                 _context.Courses.Remove(course);
@@ -32,14 +32,20 @@ namespace Obrazovashka.Repositories
             }
         }
 
-        public async Task<IEnumerable<Course>> GetAllCoursesAsync()
+        public async Task<IList<Course>> GetAllCoursesAsync()
         {
-            return await _context.Courses.ToListAsync();
+            var courses = await _context.Courses.ToListAsync();
+            if (courses == null) return null!;
+
+            return courses;
         }
 
-        public async Task<Course> GetCourseByIdAsync(int id)
+        public async Task<Course> GetCourseByIdAsync(int courseId)
         {
-            return await _context.Courses.FindAsync(id);
+            var course = await _context.Courses.FindAsync(courseId);
+            if (course == null) return null!;
+            
+            return course;
         }
 
         public async Task UpdateCourseAsync(Course course)

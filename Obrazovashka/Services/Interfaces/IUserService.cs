@@ -8,7 +8,7 @@ namespace Obrazovashka.Services
     {
         Task<RegistrationResult> RegisterUserAsync(UserRegistrationDto registrationDto);
         Task<LoginResult> LoginUserAsync(UserLoginDto loginDto);
-        Task<UserProfileDto> GetUserByIdAsync(int userId);
+        Task<UserResult> GetUserByIdAsync(int userId);
         Task<ProfileUpdateResult> UpdateProfileAsync(UserProfileDto profileDto);
     }
 }

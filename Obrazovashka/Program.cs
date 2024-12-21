@@ -19,10 +19,15 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddRazorPages();
 
 // Подключение к PostgreSQL
-string connectionString = File.ReadAllText("db_config.txt").Trim();
-builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+try
+{
+    string connectionString = File.ReadAllText("db_config.txt").Trim();
+    builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
+catch { Console.WriteLine("Удостоверьтесь, что существут файл db_config.txt\n"); }
+
 
 // Регистрация сервисов и репозиториев
 builder.Services.AddScoped<IUserRepository, UserRepository>();

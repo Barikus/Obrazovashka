@@ -37,10 +37,10 @@ namespace Obrazovashka.Services
         }
 
         // Получение курса по ID
-        public async Task<CourseDto> GetCourseByIdAsync(int id)
+        public async Task<CourseDto> GetCourseByIdAsync(int courseId)
         {
-            var course = await _courseRepository.GetCourseByIdAsync(id);
-            if (course == null) return null;
+            var course = await _courseRepository.GetCourseByIdAsync(courseId);
+            if (course == null) return null!;
 
             return new CourseDto
             {
@@ -54,7 +54,7 @@ namespace Obrazovashka.Services
         }
 
         // Получение всех курсов
-        public async Task<IEnumerable<CourseDto>> GetCoursesAsync()
+        public async Task<IList<CourseDto>> GetCoursesAsync()
         {
             var courses = await _courseRepository.GetAllCoursesAsync();
             return courses.Select(course => new CourseDto
@@ -69,7 +69,7 @@ namespace Obrazovashka.Services
         }
 
         // Получение курсов текущего пользователя по ID
-        public async Task<IEnumerable<CourseDto>> GetCoursesByUserIdAsync(int userId)
+        public async Task<IList<CourseDto>> GetCoursesByUserIdAsync(int userId)
         {
             var courses = await _courseRepository.GetAllCoursesAsync();
             return courses.Where(c => c.AuthorId == userId)
@@ -104,14 +104,14 @@ namespace Obrazovashka.Services
         {
             var existingFiles = Directory.GetFiles(courseFolderPath, "*.txt")
                 .Select(f => Path.GetFileNameWithoutExtension(f))
-                .Select(int.Parse) // Преобразуем к int напрямую
+                .Select(int.Parse)
                 .ToList();
 
             return existingFiles.Count == 0 ? 1 : existingFiles.Max() + 1;
         }
 
         // Получение всех файлов курса
-        public async Task<IEnumerable<string>> GetCourseFilesAsync(string courseFolderPath)
+        public async Task<IList<string>> GetCourseFilesAsync(string courseFolderPath)
         {
             var directoryInfo = new DirectoryInfo(courseFolderPath);
             return directoryInfo.GetFiles("*.txt").Select(f => f.Name).ToList();
@@ -124,18 +124,18 @@ namespace Obrazovashka.Services
             if (course == null)
                 return new DeletionResult { Success = false, Message = "Курс не найден." };
 
-            var filePath = Path.Combine(course.ContentPath, fileName);
+            var filePath = Path.Combine(course.ContentPath!, fileName);
             if (File.Exists(filePath))
             {
-                File.Delete(filePath); // Удаляем файл
+                File.Delete(filePath);
                 return new DeletionResult { Success = true };
             }
 
             return new DeletionResult { Success = false, Message = "Файл не найден." };
-        }
+        }       
 
         // Получение содержимого курса из текстовых файлов
-        public async Task<IEnumerable<string>> GetCourseContentsAsync(string courseFolderPath)
+        public async Task<IList<string>> GetCourseContentsAsync(string courseFolderPath)
         {
             var directoryInfo = new DirectoryInfo(courseFolderPath);
             var files = directoryInfo.GetFiles("*.txt").OrderBy(f => f.Name);
@@ -157,7 +157,7 @@ namespace Obrazovashka.Services
                 var content = await File.ReadAllTextAsync(filePath);
                 return ReplaceYouTubeLinksWithEmbedded(content);
             }
-            return null;
+            return null!;
         }
 
         // Замена ссылок на YouTube на встроенные видео
@@ -191,13 +191,13 @@ namespace Obrazovashka.Services
                 {
                     if (file.Length > 0)
                     {
-                        var existingFilePath = Path.Combine(course.ContentPath, file.FileName);
+                        var existingFilePath = Path.Combine(course.ContentPath!, file.FileName);
                         if (File.Exists(existingFilePath))
                         {
                             File.Delete(existingFilePath); // Удаляем существующий файл
                         }
 
-                        await SaveFileAsync(file, course.ContentPath); // Сохраняем новый файл
+                        await SaveFileAsync(file, course.ContentPath!); // Сохраняем новый файл
                     }
                 }
             }
@@ -207,12 +207,12 @@ namespace Obrazovashka.Services
         }
 
         // Удаление курса по ID
-        public async Task<DeletionResult> DeleteCourseAsync(int id)
+        public async Task<DeletionResult> DeleteCourseAsync(int courseId)
         {
-            var course = await _courseRepository.GetCourseByIdAsync(id);
+            var course = await _courseRepository.GetCourseByIdAsync(courseId);
             if (course == null) return new DeletionResult { Success = false, Message = "Курс не найден." };
 
-            await _courseRepository.DeleteCourseAsync(id);
+            await _courseRepository.DeleteCourseAsync(courseId);
             return new DeletionResult { Success = true };
         }
     }

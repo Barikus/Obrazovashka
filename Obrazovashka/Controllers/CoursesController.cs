@@ -28,7 +28,19 @@ namespace Obrazovashka.Controllers
         [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> CreateCourse([FromForm] CourseCreateDto courseCreateDto, IList<IFormFile> contentFiles)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            if (courseCreateDto == null) 
+                return BadRequest();
+            if (contentFiles == null || contentFiles.Count == 0)
+                return BadRequest("Необходимо загрузить хотя бы один файл.");
+
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                _logger.LogWarning("Пользователь не авторизован.");
+                return Unauthorized("Не удалось получить идентификатор пользователя.");
+            }
+
+            var userId = int.Parse(userIdClaim);
             var courseFolderPath = Path.Combine("Content", Guid.NewGuid().ToString());
             Directory.CreateDirectory(courseFolderPath);
 
@@ -43,52 +55,53 @@ namespace Obrazovashka.Controllers
 
             var courseDto = new CourseDto
             {
-                Title = courseCreateDto.Title,
-                Description = courseCreateDto.Description,
-                Tags = courseCreateDto.Tags,
+                Title = courseCreateDto.Title ?? string.Empty,
+                Description = courseCreateDto.Description ?? string.Empty,
+                Tags = courseCreateDto.Tags ?? Array.Empty<string>(),
                 AuthorId = userId,
                 ContentPath = courseFolderPath
             };
 
             var result = await _courseService.CreateCourseAsync(courseDto);
-            if (result.Success)
+            if (result.Success ?? false)
             {
                 return CreatedAtAction(nameof(GetCourse), new { id = result.CourseId }, result);
             }
 
-            return BadRequest(result);
+            return BadRequest(result.Message);
         }
 
         // Получение курса по ID
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetCourse(int id)
+        public async Task<IActionResult> GetCourse(int courseId)
         {
-            var course = await _courseService.GetCourseByIdAsync(id);
- 
+            var course = await _courseService.GetCourseByIdAsync(courseId);
+            if (course == null) return NotFound($"Курс с ID {courseId} не найден.");
+
             return Ok(course);
         }
 
         // Получение содержимого курса
         [HttpGet("{id}/contents")]
-        public async Task<IActionResult> GetCourseContents(int id)
+        public async Task<IActionResult> GetCourseContents(int courseId)
         {
-            var course = await _courseService.GetCourseByIdAsync(id);
+            var course = await _courseService.GetCourseByIdAsync(courseId);
             if (course == null)
                 return NotFound("Курс не найден.");
 
-            var contents = await _courseService.GetCourseContentsAsync(course.ContentPath);
+            var contents = await _courseService.GetCourseContentsAsync(course.ContentPath ?? string.Empty);
             return Ok(contents);
         }
 
         // Получение файлов курса
         [HttpGet("{id}/files")]
-        public async Task<IActionResult> GetCourseFiles(int id)
+        public async Task<IActionResult> GetCourseFiles(int courseId)
         {
-            var course = await _courseService.GetCourseByIdAsync(id);
+            var course = await _courseService.GetCourseByIdAsync(courseId);
             if (course == null)
                 return NotFound("Курс не найден.");
 
-            var existingFiles = await _courseService.GetCourseFilesAsync(course.ContentPath);
+            var existingFiles = await _courseService.GetCourseFilesAsync(course.ContentPath ?? string.Empty);
             return Ok(existingFiles);
         }
 
@@ -96,8 +109,10 @@ namespace Obrazovashka.Controllers
         [HttpDelete("{id}/files/{fileName}")]
         public async Task<IActionResult> DeleteFile(int id, string fileName)
         {
+            if (string.IsNullOrEmpty(fileName)) return BadRequest("Имя файла не может быть пустым.");
+
             var result = await _courseService.DeleteFileAsync(id, fileName);
-            if (result.Success)
+            if (result.Success ?? false)
                 return NoContent();
 
             return NotFound(result.Message);
@@ -116,7 +131,14 @@ namespace Obrazovashka.Controllers
         [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> GetMyCourses()
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                _logger.LogWarning("Пользователь не авторизован.");
+                return Unauthorized("Не удалось получить идентификатор пользователя.");
+            }
+
+            var userId = int.Parse(userIdClaim);
             var courses = await _courseService.GetCoursesByUserIdAsync(userId);
             return Ok(courses);
         }
@@ -126,19 +148,24 @@ namespace Obrazovashka.Controllers
         [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> UpdateCourse(int id, [FromForm] CourseUpdateDto courseUpdateDto, IList<IFormFile> contentFiles)
         {
+            if (courseUpdateDto == null) return BadRequest();
+
             var course = await _courseService.GetCourseByIdAsync(id);
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) 
+                return Unauthorized("Не удалось получить идентификатор пользователя.");
+            var userId = int.Parse(userIdClaim);
 
             if (course == null || course.AuthorId != userId)
             {
                 return NotFound("Курс не найден или у вас нет прав доступа.");
             }
 
-            courseUpdateDto.ContentFiles = contentFiles; // Добавляем файлы к DTO для обновления
+            courseUpdateDto.ContentFiles = contentFiles;
             var result = await _courseService.UpdateCourseAsync(id, courseUpdateDto);
-            if (result.Success)
+            if (result.Success ?? false)
             {
-                return Ok(result);
+                return Ok(result.Message);
             }
 
             return NotFound("Курс не найден.");
@@ -147,13 +174,13 @@ namespace Obrazovashka.Controllers
         // Удаление курса
         [HttpDelete("{id}")]
         [Authorize(Roles = "Teacher")]
-        public async Task<IActionResult> DeleteCourse(int id)
+        public async Task<IActionResult> DeleteCourse(int courseId)
         {
-            var result = await _courseService.DeleteCourseAsync(id);
-            if (result.Success)
-                return NoContent();
+            var result = await _courseService.DeleteCourseAsync(courseId);
+            if (!(result.Success ?? false))
+                return NotFound(result.Message);
 
-            return NotFound("Курс не найден.");
+            return NoContent();
         }
     }
 }

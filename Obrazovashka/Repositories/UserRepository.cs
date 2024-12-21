@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Obrazovashka.Data;
 using Obrazovashka.Models;
 using Obrazovashka.Repositories.Interfaces;
+using Obrazovashka.Results;
 
 namespace Obrazovashka.Repositories
 {
@@ -22,19 +23,41 @@ namespace Obrazovashka.Repositories
         }
 
         public async Task UpdateUserAsync(User user)
-        {
+        {   
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<User> GetUserByIdAsync(int id)
+        public async Task<UserResult> GetUserByIdAsync(int userId)
         {
-            return await _context.Users.SingleOrDefaultAsync(u => u.Id == id);
+            var user = _context.Users.First(u => u.Id == userId);
+            if (user == null)
+                return new UserResult() { Success = false, Message = "Пользователь не найден." };
+
+            var userResult = new UserResult
+            {
+                Success = true,
+                Message = "Пользователь найден",
+                User = user
+            };
+
+            return userResult;
         }
 
-        public async Task<User> GetUserByEmailAsync(string email)
+        public async Task<UserResult> GetUserByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = _context.Users.First(u => u.Email == email);
+            if (user == null)
+                return new UserResult() { Success = false, Message = "Пользователь не найден." };
+
+            var userResult = new UserResult
+            {
+                Success = true,
+                Message = "Пользователь найден",
+                User = user
+            };
+
+            return userResult;
         }
     }
 }

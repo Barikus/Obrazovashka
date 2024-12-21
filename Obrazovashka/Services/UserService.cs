@@ -25,21 +25,21 @@ namespace Obrazovashka.Services
 
         public async Task<LoginResult> LoginUserAsync(UserLoginDto loginDto)
         {
-            var user = await _userRepository.GetUserByEmailAsync(loginDto.Email);
-            if (user == null || !VerifyPasswordHash(loginDto.Password, user.PasswordHash))
+            var userResult = await _userRepository.GetUserByEmailAsync(loginDto.Email!);
+            if (userResult.Success ?? false || VerifyPasswordHash(loginDto.Password!, userResult?.User?.PasswordHash!))
             {
-                return new LoginResult { Success = false, Message = "Неправильная почта или пароль" }; // Ошибка 401
+                var token = GenerateJwtToken(userResult?.User!);
+                return new LoginResult { Token = token, Success = true };
             }
 
-            var token = GenerateJwtToken(user);
-            return new LoginResult { Token = token, Success = true };
+            return new LoginResult { Success = false, Message = "Неправильная почта или пароль" };
         }
 
 
         public async Task<RegistrationResult> RegisterUserAsync(UserRegistrationDto registrationDto)
         {
             // Проверяем, существует ли пользователь с этой электронной почтой
-            if (await _userRepository.GetUserByEmailAsync(registrationDto.Email) != null)
+            if (await _userRepository.GetUserByEmailAsync(registrationDto.Email!) != null)
             {
                 return new RegistrationResult { Success = false, Message = "Пользователь с такой электронной почтой уже существует!" };
             }
@@ -49,7 +49,7 @@ namespace Obrazovashka.Services
             {
                 Username = registrationDto.Username,
                 Email = registrationDto.Email,
-                PasswordHash = HashPassword(registrationDto.Password),
+                PasswordHash = HashPassword(registrationDto.Password!),
                 Role = registrationDto.Role
             };
 
@@ -86,14 +86,14 @@ namespace Obrazovashka.Services
         {
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, user.Role)
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString() ?? string.Empty),
+                new Claim(ClaimTypes.Name, user.Username ?? string.Empty),
+                new Claim(ClaimTypes.Role, user.Role ?? string.Empty)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Key"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Key"] ?? string.Empty));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-            var expiration = DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["DurationInMinutes"]));
+            var expiration = DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["DurationInMinutes"] ?? "720"));
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["Issuer"],
@@ -105,32 +105,29 @@ namespace Obrazovashka.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<UserProfileDto> GetUserByIdAsync(int userId)
+        public async Task<UserResult> GetUserByIdAsync(int userId)
         {
-            var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null) return null;
+            var userResult = await _userRepository.GetUserByIdAsync(userId);
+            if (userResult.Success ?? false)
+                return userResult;
 
-            return new UserProfileDto
-            {
-                Username = user.Username,
-                Email = user.Email
-            };
+            return null!;
         }
 
         public async Task<ProfileUpdateResult> UpdateProfileAsync(UserProfileDto profileDto)
         {
-            var user = await _userRepository.GetUserByEmailAsync(profileDto.Email);
+            var userResult = await _userRepository.GetUserByEmailAsync(profileDto.Email!);
 
-            if (user == null)
+            if (userResult.Success ?? false)
             {
-                return new ProfileUpdateResult { Success = false, Message = "Пользователь не найден." };
+                userResult.User.Username = profileDto.Username;
+
+                await _userRepository.UpdateUserAsync(userResult.User);
+
+                return new ProfileUpdateResult { Success = true, Message = "Профиль успешно обновлён." };
             }
 
-            user.Username = profileDto.Username;
-
-            await _userRepository.UpdateUserAsync(user);
-
-            return new ProfileUpdateResult { Success = true, Message = "Профиль успешно обновлён." };
+            return new ProfileUpdateResult { Success = false, Message = "Пользователь не найден." };
         }
     }
 }

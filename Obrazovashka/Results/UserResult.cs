@@ -2,10 +2,10 @@
 
 namespace Obrazovashka.Results
 {
-    public class CourseCreateResult
+    public class UserResult
     {
         public bool? Success { get; set; }
         public string? Message { get; set; }
-        public int? CourseId { get; set; }
+        public User? User { get; set; }
     }
 }

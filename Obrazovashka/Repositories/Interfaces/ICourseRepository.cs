@@ -7,9 +7,9 @@ namespace Obrazovashka.Repositories.Interfaces
     public interface ICourseRepository
     {
         Task AddCourseAsync(Course course);
-        Task DeleteCourseAsync(int id);
-        Task<IEnumerable<Course>> GetAllCoursesAsync();
-        Task<Course> GetCourseByIdAsync(int id);
+        Task DeleteCourseAsync(int courseId);
+        Task<IList<Course>> GetAllCoursesAsync();
+        Task<Course> GetCourseByIdAsync(int courseId);
         Task UpdateCourseAsync(Course course);
     }
 }

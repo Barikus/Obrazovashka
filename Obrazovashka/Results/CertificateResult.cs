@@ -2,7 +2,8 @@
 {
     public class CertificateResult
     {
-        public bool Success { get; set; }
-        public string CertificateUrl { get; set; }
+        public bool? Success { get; set; }
+        public string? CertificateUrl { get; set; }
+        public string? Message { get; set; }
     }
 }

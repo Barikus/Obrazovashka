@@ -4,19 +4,20 @@ namespace Obrazovashka.Models
 {
     public class User
     {
-        public int Id { get; set; }
+        [Key]
+        public int? Id { get; set; }
 
         [Required]
-        public string Username { get; set; }
+        public string? Username { get; set; }
 
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [Required]
-        public string PasswordHash { get; set; }
-        
+        public string? PasswordHash { get; set; }
+
         [Required]
-        public string Role { get; set; } // Роль: "Student" или "Teacher"
+        public string? Role { get; set; } // Student or Teacher
     }
 }
