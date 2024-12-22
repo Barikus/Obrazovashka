@@ -1,8 +1,7 @@
-﻿using System.Threading.Tasks;
-using Obrazovashka.DTOs;
-using Obrazovashka.Results;
+﻿using Obrazovashka.AuthService.DTOs;
+using Obrazovashka.AuthService.Results;
 
-namespace Obrazovashka.Services
+namespace Obrazovashka.AuthService.Services
 {
     public interface IUserService
     {

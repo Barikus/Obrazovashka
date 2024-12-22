@@ -1,6 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using Obrazovashka.Models;
 using Obrazovashka.Repositories.Interfaces;
-using Obrazovashka.Models;
 
 namespace Obrazovashka.Repositories
 {

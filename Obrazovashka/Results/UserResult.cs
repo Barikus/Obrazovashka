@@ -1,6 +1,6 @@
-﻿using Obrazovashka.Models;
+﻿using Obrazovashka.AuthService.Models;
 
-namespace Obrazovashka.Results
+namespace Obrazovashka.AuthService.Results
 {
     public class UserResult
     {

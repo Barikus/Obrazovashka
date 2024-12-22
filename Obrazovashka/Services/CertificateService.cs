@@ -1,8 +1,6 @@
-﻿using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Obrazovashka.Models;
-using Obrazovashka.Repositories.Interfaces;
+﻿using Obrazovashka.Repositories.Interfaces;
 using Obrazovashka.Results;
+using Obrazovashka.Services.Interfaces;
 
 namespace Obrazovashka.Services
 {

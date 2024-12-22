@@ -1,9 +1,7 @@
-﻿using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Obrazovashka.Models;
-using Obrazovashka.Results;
+﻿using Obrazovashka.AuthService.Models;
+using Obrazovashka.AuthService.Results;
 
-namespace Obrazovashka.Repositories.Interfaces
+namespace Obrazovashka.AuthService.Repositories.Interfaces
 {
     public interface IUserRepository
     {

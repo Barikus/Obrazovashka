@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using Obrazovashka.Services;
+using Obrazovashka.Services.Interfaces;
 
 namespace Obrazovashka.Controllers
 {

@@ -1,4 +1,4 @@
-﻿namespace Obrazovashka.DTOs
+﻿namespace Obrazovashka.AuthService.DTOs
 {
     public class UserLoginDto
     {

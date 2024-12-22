@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using Obrazovashka.Models;
 using Obrazovashka.DTOs;
-using Obrazovashka.Models;
 using Obrazovashka.Repositories.Interfaces;
+using Obrazovashka.Services.Interfaces;
 using Obrazovashka.Results;
 
 namespace Obrazovashka.Services

@@ -1,12 +1,11 @@
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using Obrazovashka.DTOs;
-using Obrazovashka.Services;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Obrazovashka.AuthService.Services;
+using Obrazovashka.AuthService.DTOs;
 
-namespace Obrazovashka.Controllers
+namespace Obrazovashka.AuthService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -85,7 +84,7 @@ namespace Obrazovashka.Controllers
 
             var userId = int.Parse(userIdClaim);
             var userResult = await _userService.GetUserByIdAsync(userId);
-            if (userResult.Success ?? false)
+            if (userResult.Success == true)
             {
                 // Обновляем данные профиля
                 var userProfile = new UserProfileDto()

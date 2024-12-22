@@ -1,11 +1,15 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Obrazovashka.Data;
-using Obrazovashka.Repositories.Interfaces;
-using Obrazovashka.Repositories;
-using Obrazovashka.Services;
+using Obrazovashka.AuthService.Repositories.Interfaces;
+using Obrazovashka.AuthService.Repositories;
+using Obrazovashka.AuthService.Services;
 using System.Text;
+using Obrazovashka.Data;
+using Obrazovashka.Services;
+using Obrazovashka.Repositories;
+using Obrazovashka.Repositories.Interfaces;
+using Obrazovashka.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +41,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddScoped<ICertificateService, CertificateService>();
+builder.Services.AddSingleton<RabbitMqService>(sp => new RabbitMqService("localhost"));
+
 
 // Добавляем конфигурацию JWT
 builder.Configuration.AddIniFile("jwt_config.txt", optional: true, reloadOnChange: true);

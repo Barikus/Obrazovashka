@@ -1,12 +1,9 @@
-﻿using Obrazovashka.DTOs;
-using Obrazovashka.Models;
-using Obrazovashka.Repositories.Interfaces;
-using Obrazovashka.Results;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using Obrazovashka.Models;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using Obrazovashka.Results;
+using Obrazovashka.DTOs;
+using Obrazovashka.Repositories.Interfaces;
+using Obrazovashka.Services.Interfaces;
 
 namespace Obrazovashka.Services
 {
@@ -40,7 +37,8 @@ namespace Obrazovashka.Services
         public async Task<CourseDto> GetCourseByIdAsync(int courseId)
         {
             var course = await _courseRepository.GetCourseByIdAsync(courseId);
-            if (course == null) return null!;
+            if (course == null) 
+                return null!;
 
             return new CourseDto
             {
@@ -132,7 +130,7 @@ namespace Obrazovashka.Services
             }
 
             return new DeletionResult { Success = false, Message = "Файл не найден." };
-        }       
+        }
 
         // Получение содержимого курса из текстовых файлов
         public async Task<IList<string>> GetCourseContentsAsync(string courseFolderPath)

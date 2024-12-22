@@ -1,7 +1,7 @@
 ﻿using Obrazovashka.Results;
 using System.Threading.Tasks;
 
-namespace Obrazovashka.Services
+namespace Obrazovashka.Services.Interfaces
 {
     public interface ICertificateService
     {

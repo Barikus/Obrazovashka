@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Obrazovashka.DTOs;
-using Obrazovashka.Services;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using Microsoft.Extensions.Logging;
-using System.IO;
+using Obrazovashka.DTOs;
+using Obrazovashka.Services.Interfaces;
 
 namespace Obrazovashka.Controllers
 {
@@ -28,7 +24,7 @@ namespace Obrazovashka.Controllers
         [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> CreateCourse([FromForm] CourseCreateDto courseCreateDto, IList<IFormFile> contentFiles)
         {
-            if (courseCreateDto == null) 
+            if (courseCreateDto == null)
                 return BadRequest();
             if (contentFiles == null || contentFiles.Count == 0)
                 return BadRequest("Необходимо загрузить хотя бы один файл.");
@@ -72,17 +68,18 @@ namespace Obrazovashka.Controllers
         }
 
         // Получение курса по ID
-        [HttpGet("{id}")]
+        [HttpGet("{courseId}")]
         public async Task<IActionResult> GetCourse(int courseId)
         {
             var course = await _courseService.GetCourseByIdAsync(courseId);
-            if (course == null) return NotFound($"Курс с ID {courseId} не найден.");
+            if (course == null) 
+                return NotFound($"Курс с ID {courseId} не найден.");
 
             return Ok(course);
         }
 
         // Получение содержимого курса
-        [HttpGet("{id}/contents")]
+        [HttpGet("{courseId}/contents")]
         public async Task<IActionResult> GetCourseContents(int courseId)
         {
             var course = await _courseService.GetCourseByIdAsync(courseId);
@@ -94,7 +91,7 @@ namespace Obrazovashka.Controllers
         }
 
         // Получение файлов курса
-        [HttpGet("{id}/files")]
+        [HttpGet("{courseId}/files")]
         public async Task<IActionResult> GetCourseFiles(int courseId)
         {
             var course = await _courseService.GetCourseByIdAsync(courseId);
@@ -106,7 +103,7 @@ namespace Obrazovashka.Controllers
         }
 
         // Удаление файла из курса
-        [HttpDelete("{id}/files/{fileName}")]
+        [HttpDelete("{courseId}/files/{fileName}")]
         public async Task<IActionResult> DeleteFile(int id, string fileName)
         {
             if (string.IsNullOrEmpty(fileName)) return BadRequest("Имя файла не может быть пустым.");
@@ -144,15 +141,15 @@ namespace Obrazovashka.Controllers
         }
 
         // Обновление курса
-        [HttpPut("{id}")]
+        [HttpPut("{courseId}")]
         [Authorize(Roles = "Teacher")]
-        public async Task<IActionResult> UpdateCourse(int id, [FromForm] CourseUpdateDto courseUpdateDto, IList<IFormFile> contentFiles)
+        public async Task<IActionResult> UpdateCourse(int courseId, [FromForm] CourseUpdateDto courseUpdateDto, IList<IFormFile> contentFiles)
         {
             if (courseUpdateDto == null) return BadRequest();
 
-            var course = await _courseService.GetCourseByIdAsync(id);
+            var course = await _courseService.GetCourseByIdAsync(courseId);
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null) 
+            if (userIdClaim == null)
                 return Unauthorized("Не удалось получить идентификатор пользователя.");
             var userId = int.Parse(userIdClaim);
 
@@ -162,7 +159,7 @@ namespace Obrazovashka.Controllers
             }
 
             courseUpdateDto.ContentFiles = contentFiles;
-            var result = await _courseService.UpdateCourseAsync(id, courseUpdateDto);
+            var result = await _courseService.UpdateCourseAsync(courseId, courseUpdateDto);
             if (result.Success ?? false)
             {
                 return Ok(result.Message);
@@ -172,7 +169,7 @@ namespace Obrazovashka.Controllers
         }
 
         // Удаление курса
-        [HttpDelete("{id}")]
+        [HttpDelete("{courseId}")]
         [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> DeleteCourse(int courseId)
         {

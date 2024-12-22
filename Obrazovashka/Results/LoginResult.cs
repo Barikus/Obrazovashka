@@ -1,4 +1,4 @@
-﻿namespace Obrazovashka.Results
+﻿namespace Obrazovashka.AuthService.Results
 {
     public class LoginResult
     {

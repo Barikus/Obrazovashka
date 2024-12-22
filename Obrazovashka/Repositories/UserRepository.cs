@@ -1,11 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using Obrazovashka.Data;
+using Obrazovashka.AuthService.Models;
+using Obrazovashka.AuthService.Repositories.Interfaces;
+using Obrazovashka.AuthService.Results;
 using Microsoft.EntityFrameworkCore;
-using Obrazovashka.Data;
-using Obrazovashka.Models;
-using Obrazovashka.Repositories.Interfaces;
-using Obrazovashka.Results;
 
-namespace Obrazovashka.Repositories
+namespace Obrazovashka.AuthService.Repositories
 {
     public class UserRepository : IUserRepository
     {
@@ -30,7 +29,7 @@ namespace Obrazovashka.Repositories
 
         public async Task<UserResult> GetUserByIdAsync(int userId)
         {
-            var user = _context.Users.First(u => u.Id == userId);
+            var user = _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
                 return new UserResult() { Success = false, Message = "Пользователь не найден." };
 
@@ -38,7 +37,7 @@ namespace Obrazovashka.Repositories
             {
                 Success = true,
                 Message = "Пользователь найден",
-                User = user
+                User = await user
             };
 
             return userResult;
@@ -46,10 +45,15 @@ namespace Obrazovashka.Repositories
 
         public async Task<UserResult> GetUserByEmailAsync(string email)
         {
-            var user = _context.Users.First(u => u.Email == email);
-            if (user == null)
-                return new UserResult() { Success = false, Message = "Пользователь не найден." };
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 
+            // Проверяем, найден ли пользователь
+            if (user == null)
+            {
+                return new UserResult() { Success = false, Message = "Пользователь не найден." };
+            }
+
+            // Возвращаем успешный результат
             var userResult = new UserResult
             {
                 Success = true,
@@ -59,5 +63,6 @@ namespace Obrazovashka.Repositories
 
             return userResult;
         }
+
     }
 }

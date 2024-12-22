@@ -1,16 +1,15 @@
-﻿using System.Linq;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Threading.Tasks;
-using Obrazovashka.DTOs;
-using Obrazovashka.Models;
-using Obrazovashka.Repositories.Interfaces;
-using Obrazovashka.Results;
+using Obrazovashka.AuthService.DTOs;
+using Obrazovashka.AuthService.Models;
+using Obrazovashka.AuthService.Repositories.Interfaces;
+using Obrazovashka.AuthService.Results;
 using System.Security.Claims;
+using Obrazovashka.Services;
 
-namespace Obrazovashka.Services
+namespace Obrazovashka.AuthService.Services
 {
     public class UserService : IUserService
     {
@@ -26,7 +25,7 @@ namespace Obrazovashka.Services
         public async Task<LoginResult> LoginUserAsync(UserLoginDto loginDto)
         {
             var userResult = await _userRepository.GetUserByEmailAsync(loginDto.Email!);
-            if (userResult.Success ?? false || VerifyPasswordHash(loginDto.Password!, userResult?.User?.PasswordHash!))
+            if (userResult.Success == true || VerifyPasswordHash(loginDto.Password!, userResult?.User?.PasswordHash!))
             {
                 var token = GenerateJwtToken(userResult?.User!);
                 return new LoginResult { Token = token, Success = true };
@@ -39,7 +38,8 @@ namespace Obrazovashka.Services
         public async Task<RegistrationResult> RegisterUserAsync(UserRegistrationDto registrationDto)
         {
             // Проверяем, существует ли пользователь с этой электронной почтой
-            if (await _userRepository.GetUserByEmailAsync(registrationDto.Email!) != null)
+            var userResult = await _userRepository.GetUserByEmailAsync(registrationDto.Email!);
+            if (userResult.Success == true)
             {
                 return new RegistrationResult { Success = false, Message = "Пользователь с такой электронной почтой уже существует!" };
             }
@@ -54,6 +54,9 @@ namespace Obrazovashka.Services
             };
 
             await _userRepository.AddUserAsync(user);
+
+            var rabbitMqService = new RabbitMqService("localhost");
+            rabbitMqService.PublishMessage("auth-to-main", $"New user registered: {user.Username}");
 
             return new RegistrationResult { Success = true, Message = "Пользователь успешно зарегистрирован." };
         }
@@ -108,7 +111,7 @@ namespace Obrazovashka.Services
         public async Task<UserResult> GetUserByIdAsync(int userId)
         {
             var userResult = await _userRepository.GetUserByIdAsync(userId);
-            if (userResult.Success ?? false)
+            if (userResult.Success == true)
                 return userResult;
 
             return null!;
@@ -118,9 +121,9 @@ namespace Obrazovashka.Services
         {
             var userResult = await _userRepository.GetUserByEmailAsync(profileDto.Email!);
 
-            if (userResult.Success ?? false)
+            if (userResult.Success == true)
             {
-                userResult.User.Username = profileDto.Username;
+                userResult.User!.Username = profileDto.Username;
 
                 await _userRepository.UpdateUserAsync(userResult.User);
 

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Obrazovashka.Models
+namespace Obrazovashka.AuthService.Models
 {
     public class User
     {

@@ -1,4 +1,4 @@
-﻿using Obrazovashka.Models;
+﻿using Obrazovashka.AuthService.Models;
 
 namespace Obrazovashka.Results
 {
