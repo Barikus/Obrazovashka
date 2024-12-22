@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Obrazovashka.DTOs;
+using Obrazovashka.Models;
 using Obrazovashka.Results;
 
 namespace Obrazovashka.Services.Interfaces
@@ -17,5 +18,9 @@ namespace Obrazovashka.Services.Interfaces
         Task<DeletionResult> DeleteCourseAsync(int courseId);
         Task<string> SaveFileAsync(IFormFile file, string courseFolderPath);
         Task<DeletionResult> DeleteFileAsync(int courseId, string fileName);
+        Task<IList<CourseDto>> SearchCoursesAsync(string searchTerm);
+        Task<IList<CourseDto>> SearchAndFilterCoursesAsync(string searchTerm, string[]? tags);
+        Task<IList<CourseDto>> RecommendCoursesAsync(int userId);
+
     }
 }

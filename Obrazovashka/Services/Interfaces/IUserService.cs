@@ -1,7 +1,7 @@
-﻿using Obrazovashka.AuthService.DTOs;
-using Obrazovashka.AuthService.Results;
+﻿using Obrazovashka.DTOs;
+using Obrazovashka.Results;
 
-namespace Obrazovashka.AuthService.Services
+namespace Obrazovashka.Services
 {
     public interface IUserService
     {

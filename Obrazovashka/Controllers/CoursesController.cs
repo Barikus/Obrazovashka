@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Obrazovashka.DTOs;
 using Obrazovashka.Services.Interfaces;
+using Obrazovashka.Models;
 
 namespace Obrazovashka.Controllers
 {
@@ -59,7 +60,7 @@ namespace Obrazovashka.Controllers
             };
 
             var result = await _courseService.CreateCourseAsync(courseDto);
-            if (result.Success ?? false)
+            if (result.Success == true)
             {
                 return CreatedAtAction(nameof(GetCourse), new { id = result.CourseId }, result);
             }
@@ -109,7 +110,7 @@ namespace Obrazovashka.Controllers
             if (string.IsNullOrEmpty(fileName)) return BadRequest("Имя файла не может быть пустым.");
 
             var result = await _courseService.DeleteFileAsync(id, fileName);
-            if (result.Success ?? false)
+            if (result.Success == true)
                 return NoContent();
 
             return NotFound(result.Message);
@@ -160,7 +161,7 @@ namespace Obrazovashka.Controllers
 
             courseUpdateDto.ContentFiles = contentFiles;
             var result = await _courseService.UpdateCourseAsync(courseId, courseUpdateDto);
-            if (result.Success ?? false)
+            if (result.Success == true)
             {
                 return Ok(result.Message);
             }
@@ -174,10 +175,18 @@ namespace Obrazovashka.Controllers
         public async Task<IActionResult> DeleteCourse(int courseId)
         {
             var result = await _courseService.DeleteCourseAsync(courseId);
-            if (!(result.Success ?? false))
+            if (!(result.Success == true))
                 return NotFound(result.Message);
 
             return NoContent();
+        }
+
+        // Поиск курса
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchCourses(string searchTerm)
+        {
+            var courses = await _courseService.SearchCoursesAsync(searchTerm);
+            return Ok(courses);
         }
     }
 }

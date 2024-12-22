@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Obrazovashka.AuthService.Models;
+using Obrazovashka.Models;
 using Obrazovashka.Models;
 
 namespace Obrazovashka.Data

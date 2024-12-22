@@ -1,7 +1,7 @@
-﻿using Obrazovashka.AuthService.Models;
-using Obrazovashka.AuthService.Results;
+﻿using Obrazovashka.Models;
+using Obrazovashka.Results;
 
-namespace Obrazovashka.AuthService.Repositories.Interfaces
+namespace Obrazovashka.Repositories.Interfaces
 {
     public interface IUserRepository
     {

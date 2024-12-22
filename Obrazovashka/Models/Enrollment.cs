@@ -8,7 +8,9 @@ namespace Obrazovashka.Models
         public int? Id { get; set; }
         public int? UserId { get; set; }
         public int? CourseId { get; set; }
-        public DateTime? EnrollmentDate { get; set; }
-        public int? FeedbackId { get; set; }
+        public DateTime EnrollmentDate { get; set; }
+        public bool Completed { get; set; } = false;
+        public double? Rating { get; set; }
+        public string? Feedback { get; set; } = string.Empty;
     }
 }
