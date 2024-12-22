@@ -21,7 +21,7 @@ namespace Obrazovashka.Controllers
         public async Task<IActionResult> GenerateCertificate(int userId, int courseId)
         {
             var result = await _certificateService.GenerateCertificateAsync(userId, courseId);
-            if (result.Success ?? false)
+            if (result.Success == true)
                 return Ok(result);
 
             return NotFound();

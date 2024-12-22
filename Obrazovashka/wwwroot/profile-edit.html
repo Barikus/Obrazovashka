@@ -30,7 +30,7 @@
                     'Authorization': 'Bearer ' + localStorage.getItem('token')
                 },
                 success: function (data) {
-                    $('#Username').val(data.username);
+                    $('#Username').val(data.user.username);
                 },
                 error: function () {
                     alert('Не удалось загрузить данные профиля.');
@@ -42,7 +42,7 @@
                 e.preventDefault();
 
                 var profileData = {
-                    username: $('#Username').val(),
+                    username: $('#Username').val()
                 };
 
                 $.ajax({
@@ -59,7 +59,7 @@
                     },
                     error: function (error) {
                         console.error('Ошибка при обновлении профиля:', error);
-                        alert('Ошибка: ' + error.responseText);
+                        alert('Ошибка: ' + error.responseJSON?.message || 'Не удалось обновить профиль.');
                     }
                 });
             });

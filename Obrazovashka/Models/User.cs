@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Obrazovashka.AuthService.Models
+namespace Obrazovashka.Models
 {
     public class User
     {
@@ -18,6 +18,6 @@ namespace Obrazovashka.AuthService.Models
         public string? PasswordHash { get; set; }
 
         [Required]
-        public string? Role { get; set; } // Student or Teacher
+        public string? Role { get; set; }
     }
 }

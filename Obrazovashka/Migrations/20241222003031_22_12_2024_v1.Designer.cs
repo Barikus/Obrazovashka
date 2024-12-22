@@ -24,7 +24,7 @@ namespace Obrazovashka.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Obrazovashka.AuthService.Models.User", b =>
+            modelBuilder.Entity("Obrazovashka.Models.User", b =>
                 {
                     b.Property<int?>("Id")
                         .ValueGeneratedOnAdd()

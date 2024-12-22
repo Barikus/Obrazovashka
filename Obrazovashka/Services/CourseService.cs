@@ -10,35 +10,69 @@ namespace Obrazovashka.Services
     public class CourseService : ICourseService
     {
         private readonly ICourseRepository _courseRepository;
+        private readonly IEnrollmentRepository _enrollmentRepository;
+        private readonly IRabbitMqService _rabbitMqService;
 
-        public CourseService(ICourseRepository courseRepository)
+        public CourseService(ICourseRepository courseRepository, IEnrollmentRepository enrollmentRepository, IRabbitMqService rabbitMqService)
         {
             _courseRepository = courseRepository;
+            _enrollmentRepository = enrollmentRepository;
+            _rabbitMqService = rabbitMqService;
         }
+
 
         // Создание нового курса
         public async Task<CourseCreateResult> CreateCourseAsync(CourseDto courseDto)
         {
-            var course = new Course
+            try
             {
-                Title = courseDto.Title,
-                Description = courseDto.Description,
-                Tags = courseDto.Tags,
-                AuthorId = courseDto.AuthorId,
-                ContentPath = courseDto.ContentPath
-            };
+                var course = new Course
+                {
+                    Title = courseDto.Title,
+                    Description = courseDto.Description,
+                    Tags = courseDto.Tags,
+                    AuthorId = courseDto.AuthorId,
+                    ContentPath = courseDto.ContentPath
+                };
 
-            await _courseRepository.AddCourseAsync(course);
+                await _courseRepository.AddCourseAsync(course);
 
-            return new CourseCreateResult { Success = true, CourseId = course.Id };
+                var message = new
+                {
+                    CourseId = course.Id,
+                    Title = course.Title,
+                    AuthorId = course.AuthorId,
+                    EventType = "CourseCreated",
+                    Timestamp = DateTime.UtcNow
+                };
+
+                _rabbitMqService.PublishMessage("statistics", message);
+
+
+                return new CourseCreateResult { Success = true, CourseId = course.Id };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при создании курса: {ex.Message}");
+                return new CourseCreateResult { Success = false, Message = "Не удалось создать курс." };
+            }
         }
 
-        // Получение курса по ID
-        public async Task<CourseDto> GetCourseByIdAsync(int courseId)
+    // Получение курса по ID
+    public async Task<CourseDto> GetCourseByIdAsync(int courseId)
         {
             var course = await _courseRepository.GetCourseByIdAsync(courseId);
             if (course == null) 
                 return null!;
+
+            var message = new
+            {
+                CourseId = courseId,
+                EventType = "CourseViewed",
+                Timestamp = DateTime.UtcNow
+            };
+
+            _rabbitMqService.PublishMessage("statistics", message);
 
             return new CourseDto
             {
@@ -212,6 +246,76 @@ namespace Obrazovashka.Services
 
             await _courseRepository.DeleteCourseAsync(courseId);
             return new DeletionResult { Success = true };
+        }
+
+        public async Task<IList<CourseDto>> SearchCoursesAsync(string searchTerm)
+        {
+            var courses = await _courseRepository.SearchCoursesAsync(searchTerm);
+            return courses.Select(c => new CourseDto
+            {
+                Id = c.Id,
+                Title = c.Title,
+                Description = c.Description,
+                ContentPath = c.ContentPath,
+                AuthorId = c.AuthorId,
+                Tags = c.Tags
+            }).ToList();
+        }
+
+        // поиск курсов по запросу и тегам
+        public async Task<IList<CourseDto>> SearchAndFilterCoursesAsync(string searchTerm, string[]? tags)
+        {
+            var courses = await _courseRepository.GetAllCoursesAsync();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                courses = courses.Where(c => c.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                                             || c.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            if (tags != null && tags.Length > 0)
+            {
+                courses = courses.Where(c => c.Tags != null && c.Tags.Intersect(tags).Any()).ToList();
+            }
+
+            return courses.Select(course => new CourseDto
+            {
+                Id = course.Id,
+                Title = course.Title,
+                Description = course.Description,
+                ContentPath = course.ContentPath,
+                AuthorId = course.AuthorId,
+                Tags = course.Tags
+            }).ToList();
+        }
+
+        public async Task<IList<CourseDto>> RecommendCoursesAsync(int userId)
+        {
+            var enrollments = await _enrollmentRepository.GetEnrollmentsByUserIdAsync(userId);
+            var completedCourses = enrollments.Where(e => e.Completed).Select(e => e.CourseId).ToList();
+
+            if (!completedCourses.Any()) return new List<CourseDto>();
+
+            var completedTags = (await _courseRepository.GetAllCoursesAsync())
+                .Where(c => completedCourses.Contains(c.Id ?? 0))
+                .SelectMany(c => c.Tags ?? Array.Empty<string>())
+                .Distinct()
+                .ToList();
+
+            var recommendedCourses = (await _courseRepository.GetAllCoursesAsync())
+                .Where(c => c.Tags != null && c.Tags.Intersect(completedTags).Any() && !completedCourses.Contains(c.Id ?? 0))
+                .Select(c => new CourseDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Description = c.Description,
+                    Tags = c.Tags,
+                    ContentPath = c.ContentPath,
+                    AuthorId = c.AuthorId
+                })
+                .ToList();
+
+            return recommendedCourses;
         }
     }
 }

@@ -2,24 +2,25 @@
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using Obrazovashka.AuthService.DTOs;
-using Obrazovashka.AuthService.Models;
-using Obrazovashka.AuthService.Repositories.Interfaces;
-using Obrazovashka.AuthService.Results;
+using Obrazovashka.DTOs;
+using Obrazovashka.Models;
+using Obrazovashka.Repositories.Interfaces;
+using Obrazovashka.Results;
 using System.Security.Claims;
-using Obrazovashka.Services;
 
-namespace Obrazovashka.AuthService.Services
+namespace Obrazovashka.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
+        private readonly IRabbitMqService _rabbitMqService;
 
-        public UserService(IUserRepository userRepository, IConfiguration configuration)
+        public UserService(IUserRepository userRepository, IConfiguration configuration, IRabbitMqService rabbitMqService)
         {
             _userRepository = userRepository;
             _configuration = configuration;
+            _rabbitMqService = rabbitMqService;
         }
 
         public async Task<LoginResult> LoginUserAsync(UserLoginDto loginDto)
@@ -28,6 +29,15 @@ namespace Obrazovashka.AuthService.Services
             if (userResult.Success == true || VerifyPasswordHash(loginDto.Password!, userResult?.User?.PasswordHash!))
             {
                 var token = GenerateJwtToken(userResult?.User!);
+
+                var message = new
+                {
+                    UserId = userResult!.User!.Id,
+                    EventType = "UserLoggedIn",
+                    Timestamp = DateTime.UtcNow
+                };
+                _rabbitMqService.PublishMessage("statistics", message);
+
                 return new LoginResult { Token = token, Success = true };
             }
 
@@ -37,28 +47,32 @@ namespace Obrazovashka.AuthService.Services
 
         public async Task<RegistrationResult> RegisterUserAsync(UserRegistrationDto registrationDto)
         {
-            // Проверяем, существует ли пользователь с этой электронной почтой
-            var userResult = await _userRepository.GetUserByEmailAsync(registrationDto.Email!);
-            if (userResult.Success == true)
+            var existingUser = await _userRepository.GetUserByEmailAsync(registrationDto.Email);
+            if (existingUser.Success == true)
             {
-                return new RegistrationResult { Success = false, Message = "Пользователь с такой электронной почтой уже существует!" };
+                return new RegistrationResult { Success = false, Message = "Пользователь с таким email уже существует." };
             }
 
-            // Создаём нового пользователя, если проверки пройдены
             var user = new User
             {
-                Username = registrationDto.Username,
                 Email = registrationDto.Email,
-                PasswordHash = HashPassword(registrationDto.Password!),
-                Role = registrationDto.Role
+                Username = registrationDto.Username,
+                PasswordHash = registrationDto.Password,
+                Role = registrationDto.Role,
             };
 
             await _userRepository.AddUserAsync(user);
 
-            var rabbitMqService = new RabbitMqService("localhost");
-            rabbitMqService.PublishMessage("auth-to-main", $"New user registered: {user.Username}");
+            var message = new
+            {
+                UserId = user.Id,
+                EventType = "UserRegistered",
+                Timestamp = DateTime.UtcNow
+            };
 
-            return new RegistrationResult { Success = true, Message = "Пользователь успешно зарегистрирован." };
+            _rabbitMqService.PublishMessage("statistics", message);
+
+            return new RegistrationResult { Success = true, Message = "Регистрация прошла успешно." };
         }
 
 
@@ -119,11 +133,11 @@ namespace Obrazovashka.AuthService.Services
 
         public async Task<ProfileUpdateResult> UpdateProfileAsync(UserProfileDto profileDto)
         {
-            var userResult = await _userRepository.GetUserByEmailAsync(profileDto.Email!);
+            var userResult = await _userRepository.GetUserByIdAsync(profileDto.Id);
 
-            if (userResult.Success == true)
+            if (userResult.Success == true && userResult.User != null)
             {
-                userResult.User!.Username = profileDto.Username;
+                userResult.User.Username = profileDto.Username;
 
                 await _userRepository.UpdateUserAsync(userResult.User);
 
@@ -132,5 +146,6 @@ namespace Obrazovashka.AuthService.Services
 
             return new ProfileUpdateResult { Success = false, Message = "Пользователь не найден." };
         }
+
     }
 }

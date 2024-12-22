@@ -9,6 +9,6 @@ namespace Obrazovashka.Models
         public int EnrollmentId { get; set; }
         public string? ContentPath { get; set; }
         public int? Rating { get; set; }
-        public int? DatePosted { get; set; }
+        public DateTime DatePosted { get; set; }
     }
 }

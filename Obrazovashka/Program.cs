@@ -1,14 +1,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Obrazovashka.AuthService.Repositories.Interfaces;
-using Obrazovashka.AuthService.Repositories;
-using Obrazovashka.AuthService.Services;
+using Obrazovashka.Repositories.Interfaces;
+using Obrazovashka.Repositories;
+using Obrazovashka.Services;
 using System.Text;
 using Obrazovashka.Data;
-using Obrazovashka.Services;
-using Obrazovashka.Repositories;
-using Obrazovashka.Repositories.Interfaces;
 using Obrazovashka.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,14 +20,24 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddRazorPages();
 
 // Подключение к PostgreSQL
+string connectionString;
 try
 {
-    string connectionString = File.ReadAllText("db_config.txt").Trim();
+    connectionString = File.ReadAllText("db_config.txt").Trim();
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new Exception("Строка подключения пуста. Убедитесь, что db_config.txt заполнен.");
+    }
+
     builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseNpgsql(connectionString));
 }
-catch { Console.WriteLine("Удостоверьтесь, что существут файл db_config.txt\n"); }
+catch (Exception ex)
+{
+    Console.WriteLine($"Ошибка чтения строки подключения: {ex.Message}");
+    Environment.Exit(1);
+}
 
 
 // Регистрация сервисов и репозиториев
@@ -41,7 +48,20 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddScoped<ICertificateService, CertificateService>();
-builder.Services.AddSingleton<RabbitMqService>(sp => new RabbitMqService("localhost"));
+
+// RabbitMQ
+builder.Services.AddSingleton<IRabbitMqService, RabbitMqService>(sp =>
+{
+    try
+    {
+        return new RabbitMqService("localhost");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Ошибка подключения RabbitMQ: {ex.Message}");
+        throw;
+    }
+});
 
 
 // Добавляем конфигурацию JWT

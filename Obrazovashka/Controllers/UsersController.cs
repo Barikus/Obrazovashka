@@ -2,10 +2,10 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using Obrazovashka.AuthService.Services;
-using Obrazovashka.AuthService.DTOs;
+using Obrazovashka.Services;
+using Obrazovashka.DTOs;
 
-namespace Obrazovashka.AuthService.Controllers
+namespace Obrazovashka.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -23,11 +23,11 @@ namespace Obrazovashka.AuthService.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationDto registrationDto)
         {
-            if (registrationDto == null) return 
-                    BadRequest("Регистрационные данные не могут быть пустыми.");
+            if (registrationDto == null)
+                return BadRequest("Регистрационные данные не могут быть пустыми.");
 
             var result = await _userService.RegisterUserAsync(registrationDto);
-            if (result.Success ?? false)
+            if (result.Success == true)
                 return Ok(result.Message);
 
             return BadRequest(result.Message);
@@ -36,11 +36,11 @@ namespace Obrazovashka.AuthService.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto loginDto)
         {
-            if (loginDto == null) 
+            if (loginDto == null || string.IsNullOrEmpty(loginDto.Email) || string.IsNullOrEmpty(loginDto.Password))
                 return BadRequest("Данные для входа не могут быть пустыми.");
 
             var result = await _userService.LoginUserAsync(loginDto);
-            if (result.Success ?? false)
+            if (result.Success == true)
                 return Ok(new { token = result.Token });
 
             return Unauthorized(result.Message);
@@ -52,56 +52,40 @@ namespace Obrazovashka.AuthService.Controllers
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdClaim))
-            {
-                _logger.LogWarning("Пользователь не авторизован.");
                 return Unauthorized("Не удалось получить идентификатор пользователя.");
-            }
 
-            var userId = int.Parse(userIdClaim);
+            if (!int.TryParse(userIdClaim, out int userId))
+                return BadRequest("Некорректный идентификатор пользователя.");
+
             var userProfile = await _userService.GetUserByIdAsync(userId);
             if (userProfile == null)
-            {
-                _logger.LogWarning($"Профиль пользователя с ID {userId} не найден.");
                 return NotFound("Профиль не найден.");
-            }
 
             return Ok(userProfile);
         }
 
-        [HttpPut("profile")]
         [Authorize]
-        public async Task<IActionResult> UpdateProfile([FromBody] UserProfileUpdateDto profileDto)
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UserProfileDto profileDto)
         {
-            if (profileDto == null) 
-                return BadRequest("Данные для обновления профиля не могут быть пустыми.");
-
+            // Получение userId из токена
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim))
+
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
-                _logger.LogWarning("Пользователь не авторизован.");
-                return Unauthorized("Не удалось получить идентификатор пользователя.");
+                return Unauthorized("Не удалось извлечь идентификатор пользователя из токена.");
             }
 
-            var userId = int.Parse(userIdClaim);
-            var userResult = await _userService.GetUserByIdAsync(userId);
-            if (userResult.Success == true)
+            profileDto.Id = userId;
+
+            var result = await _userService.UpdateProfileAsync(profileDto);
+            if (result.Success)
             {
-                // Обновляем данные профиля
-                var userProfile = new UserProfileDto()
-                {
-                    Email = userResult.User?.Email,
-                    Username = userResult.User?.Username
-                };
-
-                var profileUpdateResult = await _userService.UpdateProfileAsync(userProfile);
-                if (profileUpdateResult.Success ?? false)
-                    return Ok(profileUpdateResult.Message);
-
-                return BadRequest(profileUpdateResult.Message);
+                return Ok(result.Message);
             }
 
-            _logger.LogWarning($"Профиль пользователя с ID {userId} не найден.");
-            return NotFound("Профиль пользователя не найден.");
+            return BadRequest(result.Message);
         }
+
     }
 }

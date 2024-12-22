@@ -9,5 +9,6 @@ namespace Obrazovashka.Repositories.Interfaces
         Task<IList<Course>> GetAllCoursesAsync();
         Task<Course> GetCourseByIdAsync(int courseId);
         Task UpdateCourseAsync(Course course);
+        Task<IList<Course>> SearchCoursesAsync(string searchTerm);
     }
 }
