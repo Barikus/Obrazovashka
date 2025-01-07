@@ -2,10 +2,8 @@
 
 namespace Obrazovashka.Results
 {
-    public class UserResult
+    public class UserResult : BaseResult
     {
-        public bool Success { get; set; }
-        public string? Message { get; set; }
         public User? User { get; set; }
     }
 }

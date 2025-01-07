@@ -1,8 +1,6 @@
 ﻿namespace Obrazovashka.Results
 {
-    public class DeletionResult
+    public class DeletionResult : BaseResult
     {
-        public bool Success { get; set; }
-        public string Message { get; set; } = string.Empty;
     }
 }

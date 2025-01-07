@@ -1,8 +1,6 @@
 ﻿namespace Obrazovashka.Results
 {
-    public class FeedbackResult
+    public class FeedbackResult : BaseResult
     {
-        public bool Success { get; set; }
-        public string Message { get; set; } = string.Empty;
     }
 }

@@ -1,8 +1,6 @@
 ﻿namespace Obrazovashka.Results
 {
-    public class EnrollmentResult
+    public class EnrollmentResult : BaseResult
     {
-        public bool Success { get; set; }
-        public string Message { get; set; } = string.Empty;
     }
 }

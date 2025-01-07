@@ -1,9 +1,7 @@
 ﻿namespace Obrazovashka.Results
 {
-    public class LoginResult
+    public class LoginResult : BaseResult
     {
-        public bool Success { get; set; }
         public string? Token { get; set; }
-        public string? Message { get; set; }
     }
 }
