@@ -145,8 +145,11 @@ namespace Obrazovashka.Services
         // Получение всех файлов курса
         public async Task<IList<string>> GetCourseFilesAsync(string courseFolderPath)
         {
-            var directoryInfo = new DirectoryInfo(courseFolderPath);
-            return directoryInfo.GetFiles("*.txt").Select(f => f.Name).ToList();
+            return await Task.Run(() =>
+            {
+                var directoryInfo = new DirectoryInfo(courseFolderPath);
+                return directoryInfo.GetFiles("*.txt").Select(f => f.Name).ToList();
+            });
         }
 
         // Удаление файла по имени
@@ -269,8 +272,8 @@ namespace Obrazovashka.Services
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                courses = courses.Where(c => c.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-                                             || c.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+                courses = courses.Where(c => c.Title!.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                                             || c.Description!.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
             if (tags != null && tags.Length > 0)
