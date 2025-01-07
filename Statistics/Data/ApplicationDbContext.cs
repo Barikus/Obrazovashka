@@ -7,13 +7,8 @@ namespace Statistics.Data
     public class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
-        public DbSet<GlobalStatistics> GlobalStatistics { get; set; }
-        public DbSet<CourseStatistics> CourseStatistics { get; set; }
-        public DbSet<UserStatistics> UserStatistics { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            // Конфигурация моделей, если требуется
-        }
+        public DbSet<GlobalStatistics>? GlobalStatistics { get; set; }
+        public DbSet<CourseStatistics>? CourseStatistics { get; set; }
+        public DbSet<UserStatistics>? UserStatistics { get; set; }
     }
 }

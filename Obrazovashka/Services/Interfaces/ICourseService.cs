@@ -21,6 +21,5 @@ namespace Obrazovashka.Services.Interfaces
         Task<IList<CourseDto>> SearchCoursesAsync(string searchTerm);
         Task<IList<CourseDto>> SearchAndFilterCoursesAsync(string searchTerm, string[]? tags);
         Task<IList<CourseDto>> RecommendCoursesAsync(int userId);
-
     }
 }

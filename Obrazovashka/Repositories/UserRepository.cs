@@ -17,7 +17,7 @@ public class UserRepository : IUserRepository
     {
         try
         {
-            await _context.Users.AddAsync(user);
+            await _context.Users!.AddAsync(user);
             await _context.SaveChangesAsync();
         }
         catch (Exception ex)
@@ -31,7 +31,7 @@ public class UserRepository : IUserRepository
     {
         try
         {
-            _context.Users.Update(user);
+            _context.Users!.Update(user);
             await _context.SaveChangesAsync();
         }
         catch (Exception ex)
@@ -45,7 +45,7 @@ public class UserRepository : IUserRepository
     {
         try
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _context.Users!.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
             {
                 return new UserResult { Success = false, Message = "Пользователь не найден." };
@@ -62,7 +62,7 @@ public class UserRepository : IUserRepository
 
     public async Task<UserResult> GetUserByEmailAsync(string email)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        var user = await _context.Users!.FirstOrDefaultAsync(u => u.Email == email);
 
         // Проверяем, найден ли пользователь
         if (user == null)

@@ -16,12 +16,11 @@ public class EnrollmentRepository : IEnrollmentRepository
     {
         try
         {
-            await _context.Enrollments.AddAsync(enrollment);
+            await _context.Enrollments!.AddAsync(enrollment);
             await _context.SaveChangesAsync();
         }
         catch (Exception ex)
         {
-            // Добавлено логгирование ошибки
             Console.WriteLine($"Ошибка при добавлении записи: {ex.Message}");
             throw;
         }
@@ -31,7 +30,7 @@ public class EnrollmentRepository : IEnrollmentRepository
     {
         try
         {
-            return await _context.Enrollments.Where(e => e.UserId == userId).ToListAsync();
+            return await _context.Enrollments!.Where(e => e.UserId == userId).ToListAsync();
         }
         catch (Exception ex)
         {
@@ -44,7 +43,10 @@ public class EnrollmentRepository : IEnrollmentRepository
     {
         try
         {
-            return await _context.Enrollments.FirstOrDefaultAsync(e => e.UserId == userId && e.CourseId == courseId);
+            var enrollment = await _context.Enrollments!
+                .FirstOrDefaultAsync(e => e.UserId == userId && e.CourseId == courseId);
+
+            return enrollment!;
         }
         catch (Exception ex)
         {
@@ -53,11 +55,12 @@ public class EnrollmentRepository : IEnrollmentRepository
         }
     }
 
+
     public async Task UpdateEnrollmentAsync(Enrollment enrollment)
     {
         try
         {
-            _context.Enrollments.Update(enrollment);
+            _context.Enrollments!.Update(enrollment);
             await _context.SaveChangesAsync();
         }
         catch (Exception ex)

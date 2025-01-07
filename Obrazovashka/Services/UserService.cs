@@ -47,7 +47,7 @@ namespace Obrazovashka.Services
 
         public async Task<RegistrationResult> RegisterUserAsync(UserRegistrationDto registrationDto)
         {
-            var existingUser = await _userRepository.GetUserByEmailAsync(registrationDto.Email);
+            var existingUser = await _userRepository.GetUserByEmailAsync(registrationDto.Email!);
             if (existingUser.Success == true)
             {
                 return new RegistrationResult { Success = false, Message = "Пользователь с таким email уже существует." };

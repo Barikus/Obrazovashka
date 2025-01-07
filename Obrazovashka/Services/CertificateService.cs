@@ -47,7 +47,7 @@ namespace Obrazovashka.Services
             var courseTitle = course.Title;
 
             // Путь к файлу сертификата
-            var certificatePath = $"certificates/{userName.Replace(" ", "_")}_certificate_for_{courseTitle.Replace(" ", "_")}.pdf";
+            var certificatePath = $"certificates/{userName?.Replace(" ", "_")}_certificate_for_{courseTitle?.Replace(" ", "_")}.pdf";
             Directory.CreateDirectory("certificates");
 
             // Генерация PDF сертификата

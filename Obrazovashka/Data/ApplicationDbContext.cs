@@ -13,10 +13,5 @@ namespace Obrazovashka.Data
         public DbSet<Enrollment>? Enrollments { get; set; }
         public DbSet<Feedback>? Feedbacks { get; set; }
         public DbSet<Review>? Reviews { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            // Конфигурация моделей, если требуется
-        }
     }
 }

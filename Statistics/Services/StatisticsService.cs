@@ -13,11 +13,11 @@ public class StatisticsService
 
     public class EventMessage
     {
-        public string EventType { get; set; }
+        public string? EventType { get; set; }
         public int? UserId { get; set; }
         public int? CourseId { get; set; }
         public int? Rating { get; set; }
-        public string Feedback { get; set; }
+        public string? Feedback { get; set; }
         public DateTime Timestamp { get; set; }
     }
 
@@ -86,51 +86,51 @@ public class StatisticsService
 
     private async Task UpdateUserCountAsync()
     {
-        var stats = await _context.GlobalStatistics.FirstOrDefaultAsync() ?? new GlobalStatistics();
+        var stats = await _context.GlobalStatistics!.FirstOrDefaultAsync() ?? new GlobalStatistics();
         stats.TotalUsers++;
-        _context.GlobalStatistics.Update(stats);
+        _context.GlobalStatistics!.Update(stats);
     }
 
     private async Task UpdateCourseCountAsync()
     {
-        var stats = await _context.GlobalStatistics.FirstOrDefaultAsync() ?? new GlobalStatistics();
+        var stats = await _context.GlobalStatistics!.FirstOrDefaultAsync() ?? new GlobalStatistics();
         stats.TotalCourses++;
-        _context.GlobalStatistics.Update(stats);
+        _context.GlobalStatistics!.Update(stats);
     }
 
     private async Task UpdateCourseCompletionAsync(int userId, int courseId)
     {
-        var stats = await _context.GlobalStatistics.FirstOrDefaultAsync() ?? new GlobalStatistics();
+        var stats = await _context.GlobalStatistics!.FirstOrDefaultAsync() ?? new GlobalStatistics();
         stats.CompletedCourses++;
 
-        var courseStats = await _context.CourseStatistics.FirstOrDefaultAsync(cs => cs.CourseId == courseId)
+        var courseStats = await _context.CourseStatistics!.FirstOrDefaultAsync(cs => cs.CourseId == courseId)
                           ?? new CourseStatistics { CourseId = courseId };
         courseStats.Completions++;
-        _context.CourseStatistics.Update(courseStats);
+        _context.CourseStatistics!.Update(courseStats);
     }
 
     private async Task UpdateCourseFeedbackAsync(int courseId, int rating)
     {
-        var courseStats = await _context.CourseStatistics.FirstOrDefaultAsync(cs => cs.CourseId == courseId)
+        var courseStats = await _context.CourseStatistics!.FirstOrDefaultAsync(cs => cs.CourseId == courseId)
                           ?? new CourseStatistics { CourseId = courseId };
 
         courseStats.AverageRating = (courseStats.AverageRating * courseStats.RatingCount + rating) / (courseStats.RatingCount + 1);
         courseStats.RatingCount++;
 
-        _context.CourseStatistics.Update(courseStats);
+        _context.CourseStatistics!.Update(courseStats);
     }
 
     private async Task UpdateCourseViewsAsync(int courseId)
     {
-        var courseStats = await _context.CourseStatistics.FirstOrDefaultAsync(cs => cs.CourseId == courseId)
+        var courseStats = await _context.CourseStatistics!.FirstOrDefaultAsync(cs => cs.CourseId == courseId)
                           ?? new CourseStatistics { CourseId = courseId };
         courseStats.Views++;
-        _context.CourseStatistics.Update(courseStats);
+        _context.CourseStatistics!.Update(courseStats);
     }
 
     private async Task UpdateUserLoginAsync(int userId)
     {
-        var userStats = await _context.UserStatistics.FirstOrDefaultAsync(us => us.UserId == userId);
+        var userStats = await _context.UserStatistics!.FirstOrDefaultAsync(us => us.UserId == userId);
 
         if (userStats == null)
         {
@@ -140,12 +140,12 @@ public class StatisticsService
                 LastLogin = DateTime.UtcNow
             };
 
-            _context.UserStatistics.Add(userStats);
+            _context.UserStatistics!.Add(userStats);
         }
         else
         {
             userStats.LastLogin = DateTime.UtcNow;
-            _context.UserStatistics.Update(userStats);
+            _context.UserStatistics!.Update(userStats);
         }
 
         await _context.SaveChangesAsync();
