@@ -1,1 +1,0 @@
-Server=localhost;Database=postgres;User Id=postgres;Password=passwordpassword
